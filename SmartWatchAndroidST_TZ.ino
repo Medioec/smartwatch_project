@@ -26,39 +26,6 @@ unsigned long millisOffsetCount = 0;
 #define menu_debug_print true
 uint32_t doVibrate = 0;
 
-#if defined (ARDUINO_ARCH_AVR)
-TinyScreen display = TinyScreen(TinyScreenDefault);
-#define SerialMonitorInterface Serial
-#include <TimeLib.h>
-
-#elif defined(ARDUINO_ARCH_SAMD)
-TinyScreen display = TinyScreen(TinyScreenDefault);
-#define SerialMonitorInterface SerialUSB
-#include <RTCZero.h>
-#include <time.h>
-RTCZero RTCZ;
-uint32_t startTime = 0;
-uint32_t sleepTime = 0;
-unsigned long millisOffsetCount = 0;
-
-void wakeHandler() {
-  if (sleepTime) {
-    millisOffsetCount += (RTCZ.getEpoch() - sleepTime);
-    sleepTime = 0;
-  }
-}
-
-void RTCwakeHandler() {
-  //not used
-}
-
-void watchSleep() {
-  if (doVibrate || ble_can_sleep)
-    return;
-  sleepTime = RTCZ.getEpoch();
-  RTCZ.standbyMode();
-}
-#endif
 
 uint8_t ble_rx_buffer[21];
 uint8_t ble_rx_buffer_len = 0;
@@ -108,6 +75,40 @@ const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
 
+#if defined (ARDUINO_ARCH_AVR)
+TinyScreen display = TinyScreen(TinyScreenDefault);
+#define SerialMonitorInterface Serial
+#include <TimeLib.h>
+
+#elif defined(ARDUINO_ARCH_SAMD)
+TinyScreen display = TinyScreen(TinyScreenDefault);
+#define SerialMonitorInterface SerialUSB
+#include <RTCZero.h>
+#include <time.h>
+RTCZero RTCZ;
+uint32_t startTime = 0;
+uint32_t sleepTime = 0;
+//unsigned long millisOffsetCount = 0;
+
+void wakeHandler() {
+  if (sleepTime) {
+    millisOffsetCount += (RTCZ.getEpoch() - sleepTime);
+    sleepTime = 0;
+  }
+}
+
+void RTCwakeHandler() {
+  //not used
+}
+
+void watchSleep() {
+  if (doVibrate || ble_can_sleep)
+    return;
+  sleepTime = RTCZ.getEpoch();
+  RTCZ.standbyMode();
+}
+#endif
+
 void setup(void)
 {
 
@@ -138,7 +139,7 @@ void setup(void)
 //  attachInterrupt(TSP_PIN_BT3, wakeHandler, FALLING);
 //  attachInterrupt(TSP_PIN_BT4, wakeHandler, FALLING);
 #endif
-  Wire.begin()
+  Wire.begin();
   SerialMonitorInterface.begin(115200);
   display.begin();
   display.setFlip(true);
