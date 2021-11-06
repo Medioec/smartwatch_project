@@ -1,3 +1,4 @@
+
 //-------------------------------------------------------------------------------
 //  TinyCircuits TinyScreen/ST BLE Smartwatch Example Sketch
 //  Last Updated 26 October 2017
@@ -24,6 +25,7 @@ unsigned long millisOffsetCount = 0;
 
 #define BLE_DEBUG true
 #define menu_debug_print true
+#define displayTimeoutEnabled 0
 uint32_t doVibrate = 0;
 
 
@@ -212,7 +214,8 @@ void loop() {
   if (displayOn && (millisOffset() > mainDisplayUpdateInterval + lastMainDisplayUpdate)) {
     updateMainDisplay();
   }
-  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout*1000ul)) {
+  //millisOffset - Time since sketch execution in ms, sleepTimer - init as 0, set to millisOffset on screen-on request, sleepTimeout - default 5s
+  if ((millisOffset() > sleepTimer + ((unsigned long)sleepTimeout*1000ul)) && displayTimeoutEnabled) {
     if (displayOn) {
       displayOn = 0;
       display.off();
