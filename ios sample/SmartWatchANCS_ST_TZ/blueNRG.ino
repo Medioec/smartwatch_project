@@ -1,10 +1,25 @@
 #if BLE_DEBUG
-#include <stdio.h>
 extern char sprintbuff[100];
 #define PRINTF(...) {sprintf(sprintbuff,__VA_ARGS__);/*SerialMonitorInterface.print(millis());SerialMonitorInterface.print(' ');*/SerialMonitorInterface.print(sprintbuff);}
 #else
 #define PRINTF(...)
 #endif
+
+#define DEBUG true
+
+#include <stdio.h>
+
+#include <STBLE.h>
+
+#include "host_config.h"
+#include "debug.h"
+#include "timer.h"
+#include "ble_profile.h"
+#include "ble_events.h"
+#include "uuid.h"
+
+#include "hid_device.h"
+#include "hid_device_i.h"
 
 BLEConn * primaryConn = NULL;
 uint32_t lastProcedureCompleted = 0;
@@ -162,6 +177,88 @@ void UUIDstrToByte16(char * in, uint8_t * out) {
   PRINTF("\n");
 }
 
+
+//Add HID services
+/*#define COPY_UUID_16(uuid_struct, uuid_1, uuid_0) \
+  do {\
+    uuid_struct[0] = uuid_0; uuid_struct[1] = uuid_1;\
+  }while(0)
+
+#define COPY_HID_SERVICE_UUID(uuid_struct)  COPY_UUID_16(uuid_struct,0x18, 0x12)
+#define COPY_BATT_SERVICE_UUID(uuid_struct)  COPY_UUID_16(uuid_struct,0x18, 0x0F)
+#define COPY_DEVINFO_SERVICE_UUID(uuid_struct)  COPY_UUID_16(uuid_struct,0x18, 0x0A)
+
+uint16_t HIDServHandle, BatteryServHandle, DeviceInfoServHandle;
+
+uint8_t addHIDService() {
+  tBleStatus ret;
+  uint8_t uuid[2];
+
+  COPY_HID_SERVICE_UUID(uuid);
+  ret = aci_gatt_add_serv(UUID_TYPE_16, uuid, PRIMARY_SERVICE, 20, &HIDServHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+  COPY_BATT_SERVICE_UUID(uuid);
+  ret = aci_gatt_add_serv(UUID_TYPE_16, uuid, PRIMARY_SERVICE, 20, &BatteryServHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+  COPY_DEVINFO_SERVICE_UUID(uuid);
+  ret = aci_gatt_add_serv(UUID_TYPE_16, uuid, PRIMARY_SERVICE, 20, &DeviceInfoServHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+  return BLE_STATUS_SUCCESS;
+
+  fail:
+  PRINTF("Error while adding HID service.\n");
+  return BLE_STATUS_ERROR;
+}
+
+//use advName TinyWatch, UUID 0x1812
+//use Aci_Gap_Set_Non_Discoverable to set non discoverable
+void advertiseHID(char * advName, char * advUUID) {
+  const uint16_t advMinMS = 0;
+  const uint16_t advMaxMS = 0;
+  const uint16_t connMinMS = 50;
+  const uint16_t connMaxMS = 100;
+  uint8_t adData[3];
+  adData[2] = 0x02;
+  adData[1] = 0x18;
+  adData[0] = 0x12;
+
+  uint8_t UUID[18];
+  if (strlen(advUUID) < 8) {
+    UUID[0] = 3;
+    UUID[1] = AD_TYPE_SERV_SOLICIT_16_BIT_UUID_LIST;
+    UUIDstrToByte16(advUUID, UUID + 2);
+  } else {
+    UUID[0] = 17;
+    UUID[1] = AD_TYPE_SERV_SOLICIT_128_BIT_UUID_LIST;
+    UUIDstrToByte128(advUUID, UUID + 2);
+  }
+
+  tBleStatus ret = hci_le_set_scan_resp_data(UUID[0] + 1, UUID);
+
+  if (ret != BLE_STATUS_SUCCESS)
+    PRINTF("Set scan resp error: %d\n", (uint8_t)ret);
+
+  char local_name[16] = {AD_TYPE_COMPLETE_LOCAL_NAME};
+  strcpy(local_name + 1, advName);
+  uint8_t nameLen = strlen(local_name + 1) + 1;
+
+  ret = aci_gap_set_discoverable(ADV_IND,
+                                 (uint16_t)advMinMS, (uint16_t)advMaxMS,
+                                 STATIC_RANDOM_ADDR, NO_WHITE_LIST_USE,
+                                 nameLen, local_name,
+                                 0x03, adData, //UUID List
+                                 ((uint32_t)connMinMS * 1000ul) / 625ul, ((uint32_t)connMaxMS * 1000ul) / 625ul);
+
+  if (ret == BLE_STATUS_SUCCESS) {
+    PRINTF("General Discoverable Mode.\n");
+  } else {
+    PRINTF("gen disc err %d\n", (uint8_t)ret);
+  }
+  primaryConn->isAdvertising = true;
+}*/
 
 
 
@@ -342,47 +439,6 @@ uint8_t enableNotifications(BLEChar * characteristic, void (* updateHandler)(uin
     }
   }
   return BLE_STATUS_SUCCESS;
-}
-
-void advertise(char * advName, char * advUUID) {
-  const uint16_t advMinMS = 100;
-  const uint16_t advMaxMS = 200;
-  const uint16_t connMinMS = 50;
-  const uint16_t connMaxMS = 100;
-
-  uint8_t UUID[18];
-  if (strlen(advUUID) < 8) {
-    UUID[0] = 3;
-    UUID[1] = AD_TYPE_SERV_SOLICIT_16_BIT_UUID_LIST;
-    UUIDstrToByte16(advUUID, UUID + 2);
-  } else {
-    UUID[0] = 17;
-    UUID[1] = AD_TYPE_SERV_SOLICIT_128_BIT_UUID_LIST;
-    UUIDstrToByte128(advUUID, UUID + 2);
-  }
-
-  tBleStatus ret = hci_le_set_scan_resp_data(UUID[0] + 1, UUID);
-
-  if (ret != BLE_STATUS_SUCCESS)
-    PRINTF("Set scan resp error: %d\n", (uint8_t)ret);
-
-  char local_name[16] = {AD_TYPE_COMPLETE_LOCAL_NAME};
-  strcpy(local_name + 1, advName);
-  uint8_t nameLen = strlen(local_name + 1) + 1;
-
-  ret = aci_gap_set_discoverable(ADV_IND,
-                                 ((uint32_t)advMinMS * 1000ul) / 625ul, ((uint32_t)advMaxMS * 1000ul) / 625ul,
-                                 STATIC_RANDOM_ADDR, NO_WHITE_LIST_USE,
-                                 nameLen, local_name,
-                                 0, NULL, //UUID List
-                                 ((uint32_t)connMinMS * 1000ul) / 625ul, ((uint32_t)connMaxMS * 1000ul) / 625ul);
-
-  if (ret == BLE_STATUS_SUCCESS) {
-    PRINTF("General Discoverable Mode.\n");
-  } else {
-    PRINTF("gen disc err %d\n", (uint8_t)ret);
-  }
-  primaryConn->isAdvertising = true;
 }
 
 void Read_Request_CB(uint16_t handle)

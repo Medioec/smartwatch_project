@@ -21,6 +21,9 @@
 
 #define BLE_DEBUG true
 #define menu_debug_print true
+
+#define enableDisplayTimeout false
+
 uint32_t doVibrate = 0;
 
 //#define ARDUINO_ARCH_SAMD
@@ -155,7 +158,9 @@ void setup(void)
   delay(100);
   BLEsetup(&phoneConnection, "TinyWatch", BLEConnect, BLEDisconnect);
   useSecurity(BLEBond);
-  advertise("TinyWatch", "7905F431-B5CE-4E99-A40F-4B1E122D00D0");
+  //advertiseHID("TinyWatch", "1812");
+  HidDevice_Init(1, HIDServData, 1, 1, 0, 0, HIDCallBackFunc);
+
 
 #if defined(ARDUINO_ARCH_SAMD)
   //attachInterrupt(TSP_PIN_BT1, wakeHandler, FALLING);
@@ -184,30 +189,35 @@ uint32_t millisOffset() {
 
 void loop() {
   BLEProcess();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
-  if (!ANCSInitStep) {
-    ANCSInit();
-  } else if (ANCSInitRetry && millisOffset() - ANCSInitRetry > 1000) {
-    ANCSInit();
-  }
-  ANCSProcess();
+  
+  //Disable ANCS code from sample using if statement
+  if (1==0) {
+        if (!ANCSInitStep) {
+      ANCSInit();
+    } else if (ANCSInitRetry && millisOffset() - ANCSInitRetry > 1000) {
+      ANCSInit();
+    }
+    ANCSProcess();
 
-  if (ANCSIsBusy()) {
-    return;
-  }
+    if (ANCSIsBusy()) {
+      return;
+    }
 
-  amtNotifications = ANCSNotificationCount();
+    amtNotifications = ANCSNotificationCount();
 
-  if (newtime) {
-    newtime = 0;
-    newTimeData();
-  }
+    if (newtime) {
+      newtime = 0;
+      newTimeData();
+    }
 
-  if (ANCSNewNotification()) {
-    requestScreenOn();
-    rewriteMenu = true;
-    updateMainDisplay();
-    doVibrate = millisOffset();
+    if (ANCSNewNotification()) {
+      requestScreenOn();
+      rewriteMenu = true;
+      updateMainDisplay();
+      doVibrate = millisOffset();
+    }
   }
+  
   if (doVibrate) {
     uint32_t td = millisOffset() - doVibrate;
     if (td > 0 && td < 100) {
@@ -222,7 +232,8 @@ void loop() {
   if (displayOn && (millisOffset() > mainDisplayUpdateInterval + lastMainDisplayUpdate)) {
     updateMainDisplay();
   }
-  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul)) {
+//millisOffset - Time since sketch execution in ms, sleepTimer - init as 0, set to millisOffset on screen-on request, sleepTimeout - default 5s
+if ((millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul)) && enableDisplayTimeout) {
     if (displayOn) {
       displayOn = 0;
       display.off();
@@ -306,7 +317,7 @@ void BLEDisconnect() {
   ANCSReset();
   ble_connection_state = false;
   ANCSInitStep = -1;
-  advertise("TinyWatch", "7905F431-B5CE-4E99-A40F-4B1E122D00D0");
+  //advertiseHID("TinyWatch", "1812");
 }
 
 void ANCSInit() {
