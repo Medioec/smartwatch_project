@@ -43,20 +43,23 @@ void newMenu(int8_t newIndex) {
   }
 }
 
+//List of items in menu
 static const char PROGMEM mainMenuStrings0[] = "Set date/time";
 static const char PROGMEM mainMenuStrings1[] = "Set auto off";
 static const char PROGMEM mainMenuStrings2[] = "Set brightness";
+static const char PROGMEM mainMenuStrings3[] = "Set Timer";
 
 static const char* const PROGMEM mainMenuStrings[] =
 {
   mainMenuStrings0,
   mainMenuStrings1,
   mainMenuStrings2,
+  mainMenuStrings3,
 };
-
+//Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
-  3,
+  4,
   mainMenuStrings,
   mainMenu,
 };
@@ -179,6 +182,11 @@ void mainMenu(uint8_t selection) {
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &brightness, buffer, NULL);
   }
+  if (selection == 3) { //To add functionality for timer
+    char buffer[20];
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
+    user_timer_menu(0, &userTimerSetting, buffer, NULL);
+  }
 }
 
 
@@ -282,4 +290,71 @@ void viewMenu(uint8_t button) {
     lastMenuLine = currentMenuLine;
     lastSelectionLine = currentSelectionLine;
   }
+}
+
+uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)()) {
+  if (menu_debug_print)SerialMonitorInterface.println("user_timer_menu");
+  if (!button) {
+    if (menu_debug_print)SerialMonitorInterface.println("edit_timer_setting");
+    editIntCallBack = cb;
+    currentDisplayState = displayStateEditor;
+    editorHandler = editInt;
+    currentDigit = 0;
+    originalVal = inVal;
+    currentVal = *originalVal;
+    digits[3] = currentVal % 10; currentVal /= 10;
+    digits[2] = currentVal % 10; currentVal /= 10;
+    digits[1] = currentVal % 10; currentVal /= 10;
+    digits[0] = currentVal % 10;
+    currentVal = *originalVal;
+    display.clearWindow(0, 12, 96, 64);
+    display.setFont(font10pt);
+    display.fontColor(defaultFontColor, defaultFontBG);
+    display.setCursor(0, menuTextY[0]);
+    display.print(F("< back/undo"));
+    display.setCursor(90, menuTextY[0]);
+    display.print('^');
+    display.setCursor(10, menuTextY[1]);
+    display.print(intName);
+    display.setCursor(0, menuTextY[3]);
+    display.print(F("< next/save"));
+    display.setCursor(90, menuTextY[3]);
+    display.print('v');
+  } else if (button == upButton) {
+    if (digits[currentDigit] < 9)
+      digits[currentDigit]++;
+  } else if (button == downButton) {
+    if (digits[currentDigit] > 0)
+      digits[currentDigit]--;
+  } else if (button == selectButton) {
+    if (currentDigit < maxDigit - 1) {
+      currentDigit++;
+    } else {
+      //save
+      int newValue = (digits[3]) + (digits[2] * 10) + (digits[1] * 100) + (digits[0] * 1000);
+      *originalVal = newValue;
+      viewMenu(backButton);
+      if (editIntCallBack) {
+        editIntCallBack();
+        editIntCallBack = NULL;
+      }
+      return 1;
+    }
+  } else if (button == backButton) {
+    if (currentDigit > 0) {
+      currentDigit--;
+    } else {
+      if (menu_debug_print)SerialMonitorInterface.println(F("back"));
+      viewMenu(backButton);
+      return 0;
+    }
+  }
+  display.setCursor(10, menuTextY[2]);
+  for (uint8_t i = 0; i < 4; i++) {
+    if (i != currentDigit)display.fontColor(inactiveFontColor, defaultFontBG);
+    display.print(digits[i]);
+    if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
+  }
+  display.print(F("   "));
+  return 0;
 }

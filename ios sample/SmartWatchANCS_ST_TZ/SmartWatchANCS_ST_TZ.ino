@@ -113,6 +113,10 @@ uint8_t lastSetBrightness = 100;
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
+int userTimerSetting = 0;
+
+int displayTimeoutEnabled = 0;
+
 
 void setup(void)
 {
@@ -222,7 +226,7 @@ void loop() {
   if (displayOn && (millisOffset() > mainDisplayUpdateInterval + lastMainDisplayUpdate)) {
     updateMainDisplay();
   }
-  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul)) {
+  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul) && displayTimeoutEnabled) {
     if (displayOn) {
       displayOn = 0;
       display.off();
