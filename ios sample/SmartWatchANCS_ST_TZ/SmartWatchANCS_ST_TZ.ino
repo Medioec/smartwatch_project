@@ -90,7 +90,7 @@ unsigned long batteryUpdateInterval = 10000;
 unsigned long lastBatteryUpdate = 0;
 
 unsigned long sleepTimer = 0;
-int sleepTimeout = 5;
+int sleepTimeout = 0;
 
 uint8_t rewriteTime = true;
 
@@ -114,6 +114,8 @@ const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
 int userTimerSetting = 0;
+int userTimerSetState = 0;
+int userTimerRunningState = 0;
 
 int displayTimeoutEnabled = 0;
 
@@ -226,7 +228,7 @@ void loop() {
   if (displayOn && (millisOffset() > mainDisplayUpdateInterval + lastMainDisplayUpdate)) {
     updateMainDisplay();
   }
-  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul) && displayTimeoutEnabled) {
+  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul) && sleepTimeout != 0) {
     if (displayOn) {
       displayOn = 0;
       display.off();

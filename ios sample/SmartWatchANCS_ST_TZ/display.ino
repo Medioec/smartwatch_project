@@ -6,6 +6,7 @@ const uint8_t displayStateEditor = 0x03;
 uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
 uint8_t (*editorHandler)(uint8_t, int*, char*, void (*)()) = NULL;
+uint8_t (*userTimerHandler)(uint8_t, int*, char*, void (*)(), int*, int*) = NULL;
 
 
 const uint8_t upButton = TSButtonUpperRight;
@@ -32,6 +33,9 @@ void buttonPress(uint8_t buttons) {
   } else if (currentDisplayState == displayStateEditor) {
     if (editorHandler) {
       editorHandler(buttons, 0, 0, NULL);
+    }
+    if (userTimerHandler) {
+      userTimerHandler(buttons, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
     }
   }
 }
