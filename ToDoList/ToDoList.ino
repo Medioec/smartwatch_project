@@ -7,8 +7,14 @@
 #define WHITE           0xFF
 #define ALPHA           0xFE
 #define BROWN           0x32
+#define SELECTED        0x80
 
 #define MAX_CHARS 20 // Max Characters
+
+#define MAX_ITEMS 12 // Max  To Do List Items
+#define MAX_ITEMS_PER_PAGE 4 // Max To Do List Items Per Page
+#define MAX_PAGES 3  // Max Number Of Pages
+
 
 #include <TinyScreen.h>
 #include <SPI.h>
@@ -38,6 +44,9 @@ uint8_t ble_connection_state = false;
 bool dataSent = false;
 TinyScreen display = TinyScreen(0);
 
+void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currIndex);
+void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currSize, int* currX, int* currY);
+
 //------------------------------------------------------
 // Setup TinyScreen
 //------------------------------------------------------
@@ -53,22 +62,40 @@ void setup(void) {
 
 // 94x64 RGB Pixels
 
+// Button UpperLeft -> Up
+// Button LowerLeft -> Down
+// Button LowerRight -> Trigger On and Off
+// Button UpperRight -> Delete
+
+// Store all the to do list items in an array
+// If user selects, print that selected item as font color SELECTED, if not White
+// If user deletes, remove from array
+// If array length more than 4, stores at next page.
+
 //------------------------------------------------------
 // Main Loop
 //------------------------------------------------------
 void loop() {
-  int currX = 0;                    // Current X pointer
-  int currY = 0;                    // Current Y pointer
-  startScreen(&currX, &currY);      // Prints out default state
-  int menuHeight = currY;           // Gets Y height of menu
+  int currX = 0;                      // Current X pointer
+  int currY = 0;                      // Current Y pointer
+  startScreen(&currX, &currY);        // Prints out default state
+  int menuHeight = currY;             // Gets Y height of menu
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
-  
+
+  char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items
+  int selectedIndex = 0;                      // Index that is currently selected.
+  int currCount = 0;                          // Current count of array
   
   // Button states, 1 => pressed, 0 => not pressed
   int LowerLeftState = 0;
   int UpperLeftState = 0;
   int LowerRightState = 0;
   int UpperRightState = 0;
+
+  addItem(bufferArray, "Walk the Dog", &currCount);
+  addItem(bufferArray, "Walk the Cat", &currCount);
+  addItem(bufferArray, "Walk the Husky", &currCount);
+  printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
   
   display.setCursor(currX, currY);
   while(1) {
@@ -76,11 +103,39 @@ void loop() {
     checkBluetooth(bufferString); // Check for bluetooth inputs.
     if (dataSent){
       // If bluetooth input received, create new task on watch.
-      printItem(&currX, &currY, bufferString);
+      addItem(bufferArray, bufferString, &currCount);
       dataSent = false;
     }
-    
   }
+}
+
+//------------------------------------------------------
+// Print display on watch
+//------------------------------------------------------
+void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currSize, int* currX, int* currY) {
+    for (int i = 0; i < *currSize; i++){
+        display.setCursor(*currX, *currY);
+        char* currString = *(bufferArray + i); // Current string iteration
+        if (i == *selectedIndex){
+        // If current printed is selected
+        display.fontColor(SELECTED, BLACK);
+        display.print(currString);
+      } else {
+        display.fontColor(WHITE, BLACK);
+        display.print(currString);
+      }
+      *currY = *currY + display.getFontHeight(); // Move Y by Font Height
+    }
+}
+
+//------------------------------------------------------
+// Adds Item to Array
+//------------------------------------------------------
+void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currIndex) {
+  char newString[MAX_CHARS + 1] = "> "; // Adds "-" before to do item
+  strcat(newString, item);
+  strcpy(*(bufferArray + *currIndex), newString); // Add string to array
+  *currIndex += 1;                                // Add to current index
 }
 
 //------------------------------------------------------
@@ -130,6 +185,7 @@ void startScreen(int* currX, int* currY){
   display.fontColor(WHITE,BLACK);
   int fontHeight = display.getFontHeight();
   int fontWidth = display.getPrintWidth(displayText);
+
   display.setBrightness(10);
   display.setFlip(true);
   display.print(displayText);
@@ -139,19 +195,6 @@ void startScreen(int* currX, int* currY){
   // Change current X and Y values
   *currY = *currY + fontHeight; // Move Y by Font Height
   *currY = *currY + 1;          // Move Y by Line width
-}
-
-//------------------------------------------------------
-// Add Item to To Do List
-//------------------------------------------------------
-void printItem(int* currX, int* currY, char* item) {
-  char newString[MAX_CHARS] = "> "; // Adds "-" before to do item
-  strcat(newString, item);
-  display.setCursor(*currX, *currY);
-  display.print(newString);
-
-  // Change current X and Y values
-  *currY = *currY + display.getFontHeight(); // Move Y by Font Height
 }
 
 //------------------------------------------------------
