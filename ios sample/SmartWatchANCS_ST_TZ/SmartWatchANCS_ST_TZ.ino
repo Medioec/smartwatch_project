@@ -116,6 +116,9 @@ const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 int userTimerSetting = 0;
 int userTimerSetState = 0;
 int userTimerRunningState = 0;
+int userTimerLastValue = 0;
+int userTimerCurrentValue = 0;
+int userTimerStartTime = 0;
 
 int displayTimeoutEnabled = 0;
 

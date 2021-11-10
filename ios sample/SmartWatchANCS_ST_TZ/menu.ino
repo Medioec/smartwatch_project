@@ -293,15 +293,16 @@ void viewMenu(uint8_t button) {
 }
 
 int timerDigits[6];
-int maxTimerDigit = 6;
-//uint8_t timerStartTime = millisOffset();
 
 uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(), int *setState, int *runState) {
+  //clear stored display digits
+  reset_timer_display();
+  int maxTimerDigit = 6;
   if (menu_debug_print)SerialMonitorInterface.println("user_timer_menu");
   if (!button) {
     if (menu_debug_print)SerialMonitorInterface.println("edit_timer_setting");
     editIntCallBack = cb;
-    currentDisplayState = displayStateEditor;
+    currentDisplayState = displayStateTimer;
     userTimerHandler = user_timer_menu;
     currentDigit = 0;
     originalVal = inVal;
@@ -337,6 +338,8 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
         display.print("Timer Set");
         display.setCursor(75, menuTextY[3]);
         display.print(F("Stop"));
+        update_user_timer(userTimerCurrentValue);
+        return 0;
       } else {
         display.setCursor(70, menuTextY[0]);
         display.print(F("Pause"));
@@ -344,26 +347,36 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
         display.print("Timer Running");
         display.setCursor(75, menuTextY[3]);
         display.print(F("Stop"));
+        update_user_timer(userTimerLastValue);
+        return 0;
       }
     }
   } else if (button == upButton) {
     if (*setState == 0) {
-    if ((currentDigit == 2 or currentDigit == 4)) {
-    if (timerDigits[currentDigit] < 5)
-      timerDigits[currentDigit]++;
-    } else if (timerDigits[currentDigit] < 9)
+      if ((currentDigit == 2 or currentDigit == 4)) {
+        if (timerDigits[currentDigit] < 5)
           timerDigits[currentDigit]++;
+      } 
+      else if (timerDigits[currentDigit] < 9)
+        timerDigits[currentDigit]++;
     } else {
       if (*runState == 0) {
-      *runState = 1;
-      display.setCursor(70, menuTextY[0]);
-      display.print(F("Pause"));
-      display.setCursor(10, menuTextY[1]);
-      display.print("Timer Running");
+        *runState = 1;
+        display.setCursor(70, menuTextY[0]);
+        display.print(F("Pause"));
+        display.setCursor(10, menuTextY[1]);
+        display.print("Timer Running");
+        userTimerStartTime = millisOffset();
+        return 0;
       } else {
-      *runState = 0;
-      display.setCursor(70, menuTextY[0]);
-      display.print(F("Start"));
+        if (!userTimerCurrentValue) return 0;
+        *runState = 0;
+        userTimerLastValue = userTimerCurrentValue;
+        display.setCursor(70, menuTextY[0]);
+        display.print(F("Start"));
+        display.setCursor(10, menuTextY[1]);
+        display.print("Timer Paused   ");
+        return 0;
       }
     }
 
@@ -380,9 +393,7 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
       display.setCursor(90, menuTextY[0]);
       display.print('^');
       display.setCursor(10, menuTextY[1]);
-      display.print(F("          "));
-      display.setCursor(10, menuTextY[1]);
-      display.print(F("Set Timer"));
+      display.print(F("Set Timer    "));
       display.setCursor(0, menuTextY[3]);
       display.print(F("> next/save"));
       display.setCursor(90, menuTextY[3]);
@@ -397,17 +408,17 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
         int newValue = (timerDigits[5]) + (timerDigits[4] * 10) + (timerDigits[3] * 60) + \
           (timerDigits[2] * 600) + (timerDigits[1] * 3600) + (timerDigits[0] * 36000);
         *originalVal = newValue;
+        userTimerLastValue = newValue*1000;
+        userTimerCurrentValue = newValue*1000;
         *setState = 1;
-        PRINTF("setState 1\n");
         display.clearWindow(60, 12, 96, 64);
         display.setCursor(0, menuTextY[0]);
-        display.print(F("            "));
         display.setFont(font10pt);
         display.fontColor(defaultFontColor, defaultFontBG);
         display.setCursor(70, menuTextY[0]);
         display.print(F("Start"));
         display.setCursor(0, menuTextY[0]);
-        display.print(F("< Home"));
+        display.print(F("< Home       "));
         display.setCursor(10, menuTextY[1]);
         display.print(F("Timer Set"));
         display.setCursor(75, menuTextY[3]);
@@ -421,7 +432,7 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
         }*/
         //return 0;
       }
-    }
+    } else return 0;
   } else if (button == backButton) {
     if (*setState == 0) {
       SerialMonitorInterface.println(*setState);
@@ -449,8 +460,9 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
     if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
   }
   display.print(timerDigits[i]);
+  lastTimerDisplayed[i] = timerDigits[i];
   if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
-  if (i == 1 or i == 3)display.print(F(":"));
+  if (i == 1 || i == 3)display.print(F(":"));
   }
   display.print(F("   "));
   return 0;

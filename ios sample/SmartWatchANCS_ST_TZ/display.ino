@@ -2,6 +2,7 @@
 const uint8_t displayStateHome = 0x01;
 const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
+const uint8_t displayStateTimer = 0x04;
 
 uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
@@ -34,6 +35,7 @@ void buttonPress(uint8_t buttons) {
     if (editorHandler) {
       editorHandler(buttons, 0, 0, NULL);
     }
+  } else if (currentDisplayState == displayStateTimer) {
     if (userTimerHandler) {
       userTimerHandler(buttons, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
     }
@@ -109,6 +111,7 @@ void initHomeScreen() {
   display.clearWindow(0, 12, 96, 64);
   rewriteTime = true;
   rewriteMenu = true;
+  reset_timer_display();
   updateMainDisplay();
 }
 
@@ -186,6 +189,15 @@ void updateMainDisplay() {
       display.print(viewStr);
       rewriteMenu = false;
     }
+    if (userTimerRunningState) { //modify this if condition if need to stop timer updating
+      update_user_timer(userTimerLastValue);
+    }
+  }
+  else if (currentDisplayState == displayStateTimer) {
+    if (userTimerRunningState) {
+      update_user_timer(userTimerLastValue);
+    }
+
   }
   lastMainDisplayUpdate = millisOffset();
 }
@@ -366,4 +378,65 @@ void displayBattery() {
     display.drawLine(x + i, y, x + i, y + height, red, green, 0);
   }
 #endif
+}
+
+int lastTimerDisplayed[6];
+
+uint8_t update_user_timer(int timerval) {
+  int maxTimerDigits = 6;
+  int timerDigits[6];
+  int xcurspos = 0;
+  display.setFont(font10pt);
+  if (userTimerRunningState)
+  {
+    timerval = timerval - (millisOffset() - userTimerStartTime);
+    if (timerval < 0) timerval = 0;
+    userTimerCurrentValue = timerval;
+  }
+  timerval /= 1000;
+  //blink if timerval = 0
+  if (timerval == 0) {
+    int remainder = (millisOffset()/400) % 2;
+    if (remainder){
+      display.setCursor(xcurspos, menuTextY[2]);
+      display.print("              ");
+      reset_timer_display();
+      return 1;
+    }
+  }
+
+  timerDigits[5] = timerval % 10; timerval /= 10;
+  timerDigits[4] = timerval % 6; timerval /= 6;
+  timerDigits[3] = timerval % 10; timerval /= 10;
+  timerDigits[2] = timerval % 6; timerval /= 6;
+  timerDigits[1] = timerval % 10; timerval /= 10;
+  timerDigits[0] = timerval % 10;
+
+  for (int i = 0; i < maxTimerDigits; i++)
+  {
+    if (timerDigits[i] != lastTimerDisplayed[i])
+    {
+      if (i < 2) {
+        xcurspos = 10 + 6*i;
+      }
+      else if (i < 4){
+        xcurspos = 10 + 6*i + 2;
+      }
+      else {
+        xcurspos = 10 + 6*i + 4;
+      }
+      display.setCursor(xcurspos, menuTextY[2]);
+      display.print(timerDigits[i]);
+      lastTimerDisplayed[i] = timerDigits[i];
+      if (i == 1 || i == 3) display.print(':');
+    }
+  }
+}
+
+void reset_timer_display() {
+  PRINTF("Timer Display Reset\n");
+  for (int i = 0; i < 6; i ++) {
+    lastTimerDisplayed[i] = -1;
+  }
+  SerialMonitorInterface.println(lastTimerDisplayed[0]);
 }
