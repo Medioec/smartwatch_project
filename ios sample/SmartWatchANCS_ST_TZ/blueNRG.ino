@@ -48,7 +48,7 @@ uint8_t BLEsetup( BLEConn* conn, char * localName, void (*connect)(), void (*dis
   }
 
   /* +4 dBm output power */
-  ret = aci_hal_set_tx_power_level(1, 7);
+  ret = aci_hal_set_tx_power_level(1, 4);
 }
 
 

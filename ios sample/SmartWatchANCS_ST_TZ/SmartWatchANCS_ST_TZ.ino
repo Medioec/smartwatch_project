@@ -113,15 +113,13 @@ uint8_t lastSetBrightness = 100;
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
+//Timer Variables
 int userTimerSetting = 0;
 int userTimerSetState = 0;
 int userTimerRunningState = 0;
 int userTimerLastValue = 0;
 int userTimerCurrentValue = 0;
 int userTimerStartTime = 0;
-
-int displayTimeoutEnabled = 0;
-
 
 void setup(void)
 {
