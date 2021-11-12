@@ -111,7 +111,26 @@ int brightness = 3;
 uint8_t lastSetBrightness = 100;
 
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
+const FONT_INFO& font8pt = liberationSansNarrow_8ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
+
+//moved from menu
+const uint8_t displayStateHome = 0x01;
+const uint8_t displayStateMenu = 0x02;
+const uint8_t displayStateEditor = 0x03;
+const uint8_t displayStateTimer = 0x04;
+const uint8_t displayPSIM = 0x05;
+
+uint8_t currentDisplayState = displayStateHome;
+void (*editIntCallBack)() = NULL;
+
+const uint8_t upButton = TSButtonUpperRight;
+const uint8_t downButton = TSButtonLowerRight;
+const uint8_t selectButton = TSButtonLowerLeft;
+const uint8_t backButton = TSButtonUpperLeft;
+const uint8_t menuButton = TSButtonLowerLeft;
+const uint8_t viewButton = TSButtonLowerRight;
+const uint8_t clearButton = TSButtonLowerRight;
 
 //Timer Variables
 int userTimerSetting = 0;
@@ -120,6 +139,29 @@ int userTimerRunningState = 0;
 int userTimerLastValue = 0;
 int userTimerCurrentValue = 0;
 int userTimerStartTime = 0;
+
+//PSIM Variables
+int psVarInitLaunch = 1;
+int psVarspeed = 50;
+int psVarContinueAllowed = 0;
+int psimRunState = 0;
+
+//PVAR
+int psVarSpreadability = 0;
+int psVarSeverity = 0;
+int psVarhotAug = 0;
+int psVarColdAug = 0;
+
+//AVAR
+int psVarNumS = 0;
+float psVarNumT = 7900000000;
+int psVarSpreadResist = 0;
+int psVarCounterProgress = 0;
+int psVarSrUpProb = 0;
+int psVarCpUpProb = 0;
+
+uint8_t (*psimHandler)(uint8_t) = NULL;
+
 
 void setup(void)
 {
@@ -240,6 +282,9 @@ void loop() {
 #endif
   }
   checkButtons();
+  /*if (psimRunState) {
+    psimProcess(0);
+  }*/
 }
 
 int requestScreenOn() {

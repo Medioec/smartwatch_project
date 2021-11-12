@@ -1,22 +1,7 @@
-
-const uint8_t displayStateHome = 0x01;
-const uint8_t displayStateMenu = 0x02;
-const uint8_t displayStateEditor = 0x03;
-const uint8_t displayStateTimer = 0x04;
-
-uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
 uint8_t (*editorHandler)(uint8_t, int*, char*, void (*)()) = NULL;
 uint8_t (*userTimerHandler)(uint8_t, int*, char*, void (*)(), int*, int*) = NULL;
 
-
-const uint8_t upButton = TSButtonUpperRight;
-const uint8_t downButton = TSButtonLowerRight;
-const uint8_t selectButton = TSButtonLowerLeft;
-const uint8_t backButton = TSButtonUpperLeft;
-const uint8_t menuButton = TSButtonLowerLeft;
-const uint8_t viewButton = TSButtonLowerRight;
-const uint8_t clearButton = TSButtonLowerRight;
 
 void buttonPress(uint8_t buttons) {
   if (currentDisplayState == displayStateHome) {
@@ -38,6 +23,10 @@ void buttonPress(uint8_t buttons) {
   } else if (currentDisplayState == displayStateTimer) {
     if (userTimerHandler) {
       userTimerHandler(buttons, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
+    }
+  } else if (currentDisplayState == displayPSIM) {
+    if (psimHandler) {
+      psimHandler(buttons);
     }
   }
 }
@@ -197,6 +186,8 @@ void updateMainDisplay() {
     if (userTimerRunningState) {
       update_user_timer(userTimerLastValue);
     }
+  }
+  else if (currentDisplayState == displayPSIM) {
 
   }
   lastMainDisplayUpdate = millisOffset();

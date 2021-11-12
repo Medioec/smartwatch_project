@@ -48,6 +48,8 @@ static const char PROGMEM mainMenuStrings0[] = "Set date/time";
 static const char PROGMEM mainMenuStrings1[] = "Set auto off";
 static const char PROGMEM mainMenuStrings2[] = "Set brightness";
 static const char PROGMEM mainMenuStrings3[] = "Set Timer";
+static const char PROGMEM mainMenuStrings4[] = "PSIM";
+
 
 static const char* const PROGMEM mainMenuStrings[] =
 {
@@ -55,11 +57,13 @@ static const char* const PROGMEM mainMenuStrings[] =
   mainMenuStrings1,
   mainMenuStrings2,
   mainMenuStrings3,
+  mainMenuStrings4,
+
 };
 //Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
-  4,
+  5,
   mainMenuStrings,
   mainMenu,
 };
@@ -98,7 +102,6 @@ int digits[4];
 int currentDigit = 0;
 int maxDigit = 4;
 int *originalVal;
-void (*editIntCallBack)() = NULL;
 
 uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
@@ -186,6 +189,11 @@ void mainMenu(uint8_t selection) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     user_timer_menu(0, &userTimerSetting, buffer, NULL, &userTimerSetState, &userTimerRunningState);
+  }
+  if (selection == 4) { //To add functionality for timer
+    char buffer[20];
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
+    psimProcess(0);
   }
 }
 
