@@ -253,6 +253,7 @@ int requestScreenOn() {
   return 0;
 }
 
+//called in main loop to check for buttons
 void checkButtons() {
   byte buttons = display.getButtons();
   if (buttonReleased && buttons) {

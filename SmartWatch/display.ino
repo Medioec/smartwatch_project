@@ -18,6 +18,8 @@ const uint8_t menuButton = TSButtonLowerLeft;
 const uint8_t viewButton = TSButtonLowerRight;
 const uint8_t clearButton = TSButtonLowerRight;
 
+
+//event handler for buttons
 void buttonPress(uint8_t buttons) {
   if (currentDisplayState == displayStateHome) {
     if (buttons == viewButton) {
@@ -106,7 +108,7 @@ void viewNotifications(uint8_t button) {
   }
 }
 
-
+//go to homescreen
 void initHomeScreen() {
   display.clearWindow(0, 12, 96, 64);
   rewriteTime = true;
@@ -438,5 +440,4 @@ void reset_timer_display() {
   for (int i = 0; i < 6; i ++) {
     lastTimerDisplayed[i] = -1;
   }
-  SerialMonitorInterface.println(lastTimerDisplayed[0]);
 }
