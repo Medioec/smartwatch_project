@@ -39,7 +39,7 @@ bool dataSent = false;
 
 void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int* ErrorState);
 void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currSize, int* currX, int* currY);
-void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1]);
+void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1], int* exitList);
 void error1(int* currX, int* currY, int* ErrorState);
 
 // 94x64 RGB Pixels
@@ -61,7 +61,8 @@ char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items for ToDo
 void ToDoListStart() {
   int currX = 0;                      // Current X pointer
   int currY = 0;                      // Current Y pointer
-  
+  int exitList = 0;
+   
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
 
   
@@ -80,8 +81,6 @@ void ToDoListStart() {
   startScreen(&currX, &currY);        // Prints out default state
   
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
-  addItem(bufferArray, "Walk the Cat", &currCount, &ErrorState);
-  addItem(bufferArray, "Walk the Husky", &currCount, &ErrorState);
   printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
 
   display.setBrightness(10);
@@ -89,9 +88,15 @@ void ToDoListStart() {
   display.setCursor(currX, currY);
   
   while(1) {
-    checkButtonStates(&LowerLeftState, &UpperLeftState, &LowerRightState, &UpperRightState, &selectedIndex, &currCount, &currX, &currY, bufferArray);  // Check for button inputs.
+    if(exitList) {
+      display.clearScreen();
+      display.setCursor(0,0);
+      return;
+    }
+    
+    checkButtonStates(&LowerLeftState, &UpperLeftState, &LowerRightState, &UpperRightState, &selectedIndex, &currCount, &currX, &currY, bufferArray, &exitList);  // Check for button inputs.
     checkBluetooth(bufferString); // Check for bluetooth inputs, if avail, send to buffer string
-
+  
     // Handle bluetooth input
     if (dataSent){
       // If bluetooth input received, create new task on watch.
@@ -267,7 +272,7 @@ void checkBluetooth (char* myBufferString){
 //------------------------------------------------------
 // Check for Button Presses, if found execute
 //------------------------------------------------------
-void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1]) {
+void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1], int* exitList) {
   // If Upper Left Button is pressed.
     if (display.getButtons(TSButtonUpperLeft)){
       *UpperLeftState = 1;
@@ -276,6 +281,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         
         *UpperLeftState = 0;
         viewMenu(backButton);
+        *exitList = 1;
         return;
       }
     }
