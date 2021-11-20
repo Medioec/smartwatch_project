@@ -44,16 +44,17 @@ void error1(int* currX, int* currY, int* ErrorState);
 
 // 94x64 RGB Pixels
 
-// Button UpperLeft -> Up
-// Button LowerLeft -> Down
-// Button LowerRight -> Trigger On and Off
-// Button UpperRight -> Delete
+// Button UpperLeft -> MENU
+// Button LowerLeft -> DELETE
+// Button LowerRight -> Up
+// Button UpperRight -> Down
 
 // Store all the to do list items in an array
 // If user selects, print that selected item as font color SELECTED, if not White
 // If user deletes, remove from array
 // If array length more than 4, stores at next page.
 
+char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items for ToDoList
 //------------------------------------------------------
 // Main Loop
 //------------------------------------------------------
@@ -63,7 +64,7 @@ void ToDoListStart() {
   
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
 
-  char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items
+  
   int selectedIndex = 0;                      // Index that is currently selected.
   int currCount = 0;                          // Current count of array
   
@@ -272,25 +273,10 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
       *UpperLeftState = 1;
       if (UpperLeftState != 0) {
         delay(500); // Buffer for button press.
-
-        // Select Previous
-        *selectedIndex -= 1;
-        if(*selectedIndex < 0){
-          // If out of bounds, go back to first index.
-          *selectedIndex = 0;
-        }
-
-        // Clear screen, reset X and Y pointers
-        display.clearScreen(); 
-        *currX = 0;
-        *currY = 0;
         
-        // Reprint the screen, with new item
-        startScreen(currX, currY);
-        printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
-
-
         *UpperLeftState = 0;
+        viewMenu(backButton);
+        return;
       }
     }
 
@@ -299,9 +285,13 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
       *UpperRightState = 1;
       if (*UpperRightState != 0) {
         delay(500); // Buffer for button press.
-
-        // Remove items
-        removeItem(bufferArray, selectedIndex, currCount);
+        
+        // Select Previous
+        *selectedIndex -= 1;
+        if(*selectedIndex < 0){
+          // If out of bounds, go back to first index.
+          *selectedIndex = 0;
+        }
 
         // Clear screen, reset X and Y pointers
         display.clearScreen(); 
@@ -320,7 +310,30 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
       *LowerLeftState = 1;
       if (*LowerLeftState != 0) {
         delay(500); // Buffer for button press.
+        // Remove items
+        removeItem(bufferArray, selectedIndex, currCount);
 
+        // Clear screen, reset X and Y pointers
+        display.clearScreen(); 
+        *currX = 0;
+        *currY = 0;
+        
+        // Reprint the screen, with new item
+        startScreen(currX, currY);
+        printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
+        
+
+        *LowerLeftState = 0;
+      }
+    }
+
+    // If Lower Right Button is pressed.
+    if (display.getButtons(TSButtonLowerRight)){
+      *LowerRightState = 1;
+      if (*LowerRightState != 0) {
+        delay(500); // Buffer for button press.
+
+        // NEXT
         // Select Next To Do List
         *selectedIndex += 1;
         if (*selectedIndex > *currCount - 1) {
@@ -336,17 +349,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         // Reprint the screen, with new item
         startScreen(currX, currY);
         printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
-
-        *LowerLeftState = 0;
-      }
-    }
-
-    // If Lower Right Button is pressed.
-    if (display.getButtons(TSButtonLowerRight)){
-      *LowerRightState = 1;
-      if (*LowerRightState != 0) {
-        delay(500); // Buffer for button press.
-//        display.print(*LowerRightState); 
+        
         *LowerRightState = 0;
       }
     }
