@@ -69,7 +69,7 @@ static const char* const PROGMEM mainMenuStrings[] =
 //Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
-  6, //no. of menu items
+  7, //no. of menu items
   mainMenuStrings, //strings
   mainMenu, //selection handler function
 };
@@ -108,6 +108,10 @@ int digits[4];
 int currentDigit = 0;
 int maxDigit = 4;
 int *originalVal;
+
+
+uint8_t dateTimeSelection = 0;
+int dateTimeVariable = 0;
 
 uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
@@ -201,6 +205,7 @@ void mainMenu(uint8_t selection) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     psimProcess(0);
+  }
   if (selection == 1) {
     char buffer[20];
     viewtemp(0, NULL, 0, NULL);
@@ -211,8 +216,6 @@ void mainMenu(uint8_t selection) {
 }
 
 
-uint8_t dateTimeSelection = 0;
-int dateTimeVariable = 0;
 
 void saveChangeCallback() {
 #if defined (ARDUINO_ARCH_AVR)
@@ -351,8 +354,8 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
       display.setCursor(90, menuTextY[3]);
       display.print('v');
     } else {
-        display.setCursor(0, menuTextY[0]);
-        display.print(F("< Home"));
+      display.setCursor(0, menuTextY[0]);
+      display.print(F("< Home"));
       if (*runState == 0) {
         display.setCursor(70, menuTextY[0]);
         display.print(F("Start"));
@@ -378,7 +381,7 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
       if ((currentDigit == 2 or currentDigit == 4)) {
         if (timerDigits[currentDigit] < 5)
           timerDigits[currentDigit]++;
-      } 
+      }
       else if (timerDigits[currentDigit] < 9)
         timerDigits[currentDigit]++;
     } else {
@@ -428,10 +431,10 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
       else {
         //save
         int newValue = (timerDigits[5]) + (timerDigits[4] * 10) + (timerDigits[3] * 60) + \
-          (timerDigits[2] * 600) + (timerDigits[1] * 3600) + (timerDigits[0] * 36000);
+                       (timerDigits[2] * 600) + (timerDigits[1] * 3600) + (timerDigits[0] * 36000);
         *originalVal = newValue;
-        userTimerLastValue = newValue*1000;
-        userTimerCurrentValue = newValue*1000;
+        userTimerLastValue = newValue * 1000;
+        userTimerCurrentValue = newValue * 1000;
         *setState = 1;
         display.clearWindow(60, 12, 96, 64);
         display.setCursor(0, menuTextY[0]);
@@ -451,7 +454,7 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
         /*if (editIntCallBack) {
           editIntCallBack();
           editIntCallBack = NULL;
-        }*/
+          }*/
         //return 0;
       }
     } else return 0;
@@ -476,15 +479,15 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
   }
   display.setCursor(10, menuTextY[2]);
   for (uint8_t i = 0; i < 6; i++) {
-  if (*setState == 0) {
-    if (i != currentDigit)display.fontColor(inactiveFontColor, defaultFontBG);
-  } else {
+    if (*setState == 0) {
+      if (i != currentDigit)display.fontColor(inactiveFontColor, defaultFontBG);
+    } else {
+      if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
+    }
+    display.print(timerDigits[i]);
+    lastTimerDisplayed[i] = timerDigits[i];
     if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
-  }
-  display.print(timerDigits[i]);
-  lastTimerDisplayed[i] = timerDigits[i];
-  if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
-  if (i == 1 || i == 3)display.print(F(":"));
+    if (i == 1 || i == 3)display.print(F(":"));
   }
   display.print(F("   "));
   return 0;
@@ -511,15 +514,15 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
     display.setFont(font10pt);
     display.fontColor(defaultFontColor, defaultFontBG);
 
-     display.setCursor(0, menuTextY[0]);
+    display.setCursor(0, menuTextY[0]);
     display.print(F("< back"));
     display.setCursor(90, menuTextY[0]);
-   display.setCursor(10, menuTextY[1]);
+    display.setCursor(10, menuTextY[1]);
     showSerial();
     display.setCursor(0, menuTextY[3]);
-  
-    
-  
+
+
+
   } else if (button == upButton) {
     if (digits[currentDigit] < 9)
       digits[currentDigit]++;
@@ -531,7 +534,7 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
       currentDigit++;
     } else {
       //save
-      
+
       viewMenu(backButton);
       if (editIntCallBack) {
         editIntCallBack();
@@ -548,12 +551,12 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
       return 0;
     }
   }
-  
- 
- 
+
+
+
   return 0;
 }
-  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 //------------------------------------------------------
 // Setup Bluetooth Configuration
@@ -610,13 +613,13 @@ void ToDoListStart() {
   int currX = 0;                      // Current X pointer
   int currY = 12;                      // Current Y pointer
   int exitList = 0;
-   
+
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
 
-  
+
   int selectedIndex = 0;                      // Index that is currently selected.
   int currCount = 0;                          // Current count of array
-  
+
   // Button states, 1 => pressed, 0 => not pressed
   int LowerLeftState = 0;
   int UpperLeftState = 0;
@@ -627,8 +630,8 @@ void ToDoListStart() {
   int ErrorState = 0;
 
   currentDisplayState = displayStateToDo;
-  
-  
+
+
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
@@ -637,36 +640,36 @@ void ToDoListStart() {
   display.setBrightness(10);
   display.setFlip(true);
   display.setCursor(currX, currY);
-  
-  while(1) {
-    if(exitList) {
+
+  while (1) {
+    if (exitList) {
       display.clearWindow(0, 12, 96, 64);
       display.setFont(font10pt);
       break;
     }
-    
+
     checkButtonStates(&LowerLeftState, &UpperLeftState, &LowerRightState, &UpperRightState, &selectedIndex, &currCount, &currX, &currY, bufferArray, &exitList);  // Check for button inputs.
     checkBluetooth(bufferString); // Check for bluetooth inputs, if avail, send to buffer string
-  
+
     // Handle bluetooth input
-    if (dataSent){
+    if (dataSent) {
       // If bluetooth input received, create new task on watch.
       addItem(bufferArray, bufferString, &currCount, &ErrorState);
       dataSent = false;
 
       // Handle too many items error
-      if(ErrorState == 1) {
+      if (ErrorState == 1) {
         error1(&currX, &currY, &ErrorState);
         ErrorState = 0;
       }
-      
+
       // Reprint the screen, with new item
-      
+
       // Clear screen, reset X and Y pointers
       display.clearWindow(0, 12, 96, 64);
       currX = 0;
       currY = 12;
-      
+
       // Print current bufferarray
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
@@ -674,7 +677,7 @@ void ToDoListStart() {
   display.clearWindow(0, 12, 96, 64);
   viewMenu(backButton);
   currentDisplayState = displayStateMenu;
-  
+
   int currentDay = RTCZ.getDay();
   int currentMonth = RTCZ.getMonth();
   int currentYear = RTCZ.getYear();
@@ -704,11 +707,11 @@ void error1(int* currX, int* currY, int* ErrorState) {
 
   char* errorText = "ERROR!!!";
   char* errorText2 = "More than 4 items detected";
-  
+
   display.clearWindow(0, 12, 96, 64);
   display.setCursor(tmpX, tmpY);
-  display.setFont(liberationSans_10ptFontInfo); 
-  display.fontColor(RED,BLACK);
+  display.setFont(liberationSans_10ptFontInfo);
+  display.fontColor(RED, BLACK);
 
   display.print(errorText);
   int fontHeight = display.getFontHeight();
@@ -724,26 +727,26 @@ void error1(int* currX, int* currY, int* ErrorState) {
 // Print display on watch
 //------------------------------------------------------
 void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currSize, int* currX, int* currY) {
-    for (int i = 0; i < *currSize; i++){
-        display.setCursor(*currX, *currY);
-        char* currString = *(bufferArray + i); // Current string iteration
-        if (i == *selectedIndex){
-        // If current printed is selected
-        display.fontColor(SELECTED, BLACK);
-        display.print(currString);
-      } else {
-        display.fontColor(WHITE, BLACK);
-        display.print(currString);
-      }
-      *currY = *currY + display.getFontHeight(); // Move Y by Font Height
+  for (int i = 0; i < *currSize; i++) {
+    display.setCursor(*currX, *currY);
+    char* currString = *(bufferArray + i); // Current string iteration
+    if (i == *selectedIndex) {
+      // If current printed is selected
+      display.fontColor(SELECTED, BLACK);
+      display.print(currString);
+    } else {
+      display.fontColor(WHITE, BLACK);
+      display.print(currString);
     }
+    *currY = *currY + display.getFontHeight(); // Move Y by Font Height
+  }
 }
 
 //------------------------------------------------------
 // Adds Item to Array
 //------------------------------------------------------
 void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int* ErrorState) {
-  if (*currCount < MAX_ITEMS){
+  if (*currCount < MAX_ITEMS) {
     char newString[MAX_CHARS + 1] = "> "; // Adds "-" before to do item
     strcat(newString, item);
     strcpy(*(bufferArray + *currCount), newString); // Add string to array
@@ -758,21 +761,21 @@ void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int*
 //------------------------------------------------------
 void removeItem(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currCount) {
   // Remove select item index from array.
-  if (*currCount > 0){
+  if (*currCount > 0) {
     bool deleted = false;
     for (int i = 0; i < MAX_ITEMS; i++) {
-      
-      if(i == *selectedIndex) {
+
+      if (i == *selectedIndex) {
         deleted = true;
       }
-      if(deleted) {
+      if (deleted) {
         // If index in range, shift next index in
-        if(i + 1 <= MAX_ITEMS - 1){
-          strcpy(bufferArray[i],bufferArray[i+1]);
-        } 
+        if (i + 1 <= MAX_ITEMS - 1) {
+          strcpy(bufferArray[i], bufferArray[i + 1]);
+        }
       }
     }
-  
+
     *selectedIndex = 0;
     *currCount -= 1;
   }
@@ -781,7 +784,7 @@ void removeItem(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* curr
 //------------------------------------------------------
 // Check for Bluetooth Input, if avail, save to bufferstring
 //------------------------------------------------------
-void checkBluetooth (char* myBufferString){
+void checkBluetooth (char* myBufferString) {
   aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
   if (ble_rx_buffer_len) {//Check if data is available
     strcpy(myBufferString, "");
@@ -820,35 +823,35 @@ void checkBluetooth (char* myBufferString){
 //------------------------------------------------------
 void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1], int* exitList) {
   // If Upper Left Button is pressed.
-    if (display.getButtons(TSButtonUpperLeft)){
-      *UpperLeftState = 1;
-      if (UpperLeftState != 0) {
-        delay(500); // Buffer for button press.
-        
-        *UpperLeftState = 0;
-        *exitList = 1;
-        return;
-      }
+  if (display.getButtons(TSButtonUpperLeft)) {
+    *UpperLeftState = 1;
+    if (UpperLeftState != 0) {
+      delay(500); // Buffer for button press.
+
+      *UpperLeftState = 0;
+      *exitList = 1;
+      return;
     }
+  }
 
   // If Upper Right Button is pressed.
-  if (display.getButtons(TSButtonUpperRight)){
+  if (display.getButtons(TSButtonUpperRight)) {
     *UpperRightState = 1;
     if (*UpperRightState != 0) {
       delay(500); // Buffer for button press.
-      
+
       // Select Previous
       *selectedIndex -= 1;
-      if(*selectedIndex < 0){
+      if (*selectedIndex < 0) {
         // If out of bounds, go back to first index.
         *selectedIndex = 0;
       }
 
       // Clear screen, reset X and Y pointers
-      display.clearWindow(0, 12, 96, 64); 
+      display.clearWindow(0, 12, 96, 64);
       *currX = 0;
       *currY = 12;
-      
+
       // Reprint the screen, with new item
       printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
       *UpperRightState = 0;
@@ -856,7 +859,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
   }
 
   // If Lower Left Button is pressed.
-  if (display.getButtons(TSButtonLowerLeft)){
+  if (display.getButtons(TSButtonLowerLeft)) {
     *LowerLeftState = 1;
     if (*LowerLeftState != 0) {
       delay(500); // Buffer for button press.
@@ -867,18 +870,18 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
       display.clearWindow(0, 12, 96, 64);
       *currX = 0;
       *currY = 12;
-      
+
       // Reprint the screen, with new item
 
       printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
-      
+
 
       *LowerLeftState = 0;
     }
   }
 
   // If Lower Right Button is pressed.
-  if (display.getButtons(TSButtonLowerRight)){
+  if (display.getButtons(TSButtonLowerRight)) {
     *LowerRightState = 1;
     if (*LowerRightState != 0) {
       delay(500); // Buffer for button press.
@@ -895,10 +898,10 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
       display.clearWindow(0, 12, 96, 64);
       *currX = 0;
       *currY = 12;
-      
+
       // Reprint the screen, with new item
       printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
-      
+
       *LowerRightState = 0;
     }
   }

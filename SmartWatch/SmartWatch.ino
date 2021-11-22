@@ -18,7 +18,7 @@
 #include <TinyScreen.h>
 #include <STBLE.h>
 #include <LibPrintf.h>
-#include "BMA250.h" 
+#include "BMA250.h"
 
 #define BLE_DEBUG true
 #define menu_debug_print true
@@ -60,15 +60,15 @@ void watchSleep() {
 }
 #endif
 /*
-BLEConn phoneConnection;
-BLEServ timeService;
-BLEServ ANCSService;
-BLEChar currentTimeChar;
-BLEChar NSchar;
-BLEChar CPchar;
-BLEChar DSchar;
-int ANCSInitStep = -1;
-unsigned long ANCSInitRetry = 0;*/
+  BLEConn phoneConnection;
+  BLEServ timeService;
+  BLEServ ANCSService;
+  BLEChar currentTimeChar;
+  BLEChar NSchar;
+  BLEChar CPchar;
+  BLEChar DSchar;
+  int ANCSInitStep = -1;
+  unsigned long ANCSInitRetry = 0;*/
 
 uint8_t ble_connection_state = false;
 uint8_t ble_connection_displayed_state = true;
@@ -116,7 +116,6 @@ int brightness = 3;
 uint8_t lastSetBrightness = 100;
 
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
-const FONT_INFO& font8pt = liberationSansNarrow_8ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
 //moved from menu
@@ -125,6 +124,8 @@ const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
 const uint8_t displayStateTimer = 0x04;
 const uint8_t displayPSIM = 0x05;
+const uint8_t displayStateToDo = 0x0A;
+
 
 uint8_t currentDisplayState = displayStateHome;
 void (*editIntCallBack)() = NULL;
@@ -147,25 +148,37 @@ int userTimerStartTime = 0;
 
 //PSIM Variables
 int psVarInitLaunch = 1;
-int psVarspeed = 50;
+int psVarspeed = 2;
 int psVarContinueAllowed = 0;
 int psimRunState = 0;
 uint32_t psRelTime = 0;
 
 //PVAR
-int psVarScore = 0;
-int psVarSpreadability = 0;
-int psVarSeverity = 0;
-int psVarhotAug = 0;
-int psVarColdAug = 0;
+typedef struct employee {
+  int income;
+  int cost;
+  int number;
+} employee;
 
-//AVAR
-float psVarNumTotal = 7900000000;
-float psVarNumSpread = 1;
-int psVarSpreadResist = 0;
-int psVarCounterProgress = 0;
-int psVarSrUpProb = 0;
-int psVarCpUpProb = 0;
+typedef struct upgrades {
+  int modifier;
+  int cost;
+  int level;
+} upgrades;
+
+typedef struct startup {
+  float funds;
+  int manning;
+} startup;
+
+startup player {0, 1};
+
+employee intern {10, 800, 1};
+employee dipGrad {50, 2000, 0};
+employee grad {200, 4000, 0};
+
+upgrades computer {0.1, 2000, 0};
+upgrades lounge {0.1, 2000, 0};
 
 uint8_t (*psimHandler)(uint8_t) = NULL;
 
@@ -185,14 +198,14 @@ void setup(void)
 #elif defined(ARDUINO_ARCH_SAMD)
   /*for (int i = 0; i < 27; i++) {
     pinMode(i, INPUT_PULLUP);
-  }
-  pinMode(28, INPUT_PULLUP);
-  pinMode(29, INPUT_PULLUP);
-  pinMode(42, INPUT_PULLUP);
-  pinMode(44, INPUT_PULLUP);
-  pinMode(45, INPUT_PULLUP);
-  pinMode(A4, INPUT);
-  pinMode(2, INPUT);*/
+    }
+    pinMode(28, INPUT_PULLUP);
+    pinMode(29, INPUT_PULLUP);
+    pinMode(42, INPUT_PULLUP);
+    pinMode(44, INPUT_PULLUP);
+    pinMode(45, INPUT_PULLUP);
+    pinMode(A4, INPUT);
+    pinMode(2, INPUT);*/
   RTCZ.begin();
   RTCZ.setTime(16, 15, 1);//h,m,s
   RTCZ.setDate(25, 7, 16);//d,m,y
@@ -210,7 +223,7 @@ void setup(void)
   //dwqddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
   SerialMonitorInterface.print("Initializing BMA...");
   // Set up the BMA250 acccelerometer sensor
-  accel_sensor.begin(BMA250_range_2g, BMA250_update_time_64ms); 
+  accel_sensor.begin(BMA250_range_2g, BMA250_update_time_64ms);
   //dwqdqwdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
   display.begin();
@@ -250,49 +263,49 @@ uint32_t millisOffset() {
 }
 
 void loop() {
-//ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
- accel_sensor.read();//This function gets new data from the acccelerometer
+  //ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+  accel_sensor.read();//This function gets new data from the acccelerometer
   // Get the acceleration values from the sensor and store them into global variables
   // (Makes reading the rest of the program easier)
   temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
 
   // If the BMA250 is not found, nor connected correctly, these values will be produced
-  // by the sensor 
-  
-   // if we have correct sensor readings: 
-                 //Print to Serial Monitor or Plotter
-    
+  // by the sensor
+
+  // if we have correct sensor readings:
+  //Print to Serial Monitor or Plotter
+
   // The BMA250 can only poll new sensor values every 64ms, so this delay
   // will ensure that we can continue to read values
   delay(25);
-  // ***Without the delay, there would not be any sensor output*** 
-//dwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+  // ***Without the delay, there would not be any sensor output***
+  //dwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
   /*BLEProcess();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
-  if (!ANCSInitStep) {
+    if (!ANCSInitStep) {
     ANCSInit();
-  } else if (ANCSInitRetry && millisOffset() - ANCSInitRetry > 1000) {
+    } else if (ANCSInitRetry && millisOffset() - ANCSInitRetry > 1000) {
     ANCSInit();
-  }
-  ANCSProcess();
+    }
+    ANCSProcess();
 
-  if (ANCSIsBusy()) {
+    if (ANCSIsBusy()) {
     return;
-  }
+    }
 
-  amtNotifications = ANCSNotificationCount();
+    amtNotifications = ANCSNotificationCount();
 
-  if (newtime) {
+    if (newtime) {
     newtime = 0;
     newTimeData();
-  }
+    }
 
-  if (ANCSNewNotification()) {
+    if (ANCSNewNotification()) {
     requestScreenOn();
     rewriteMenu = true;
     updateMainDisplay();
     doVibrate = millisOffset();
-  }*/
+    }*/
   aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
   if (ble_rx_buffer_len) {
     if (ble_rx_buffer[0] == 'D') {
@@ -392,7 +405,7 @@ void checkButtons() {
 }
 
 /*
-void newTimeData() {
+  void newTimeData() {
   int y, M, d, k, m, s;
   y = (TimeData[1] << 8) | TimeData[0];
   M = TimeData[2];
@@ -402,61 +415,61 @@ void newTimeData() {
   s = TimeData[6];
   //dayOfWeek = timeData[7];
   //fractionOfSecond = timeData[8];
-#if defined (ARDUINO_ARCH_AVR)
+  #if defined (ARDUINO_ARCH_AVR)
   setTime(k, m, s, d, M, y);
-#elif defined(ARDUINO_ARCH_SAMD)
+  #elif defined(ARDUINO_ARCH_SAMD)
   RTCZ.setTime(k, m, s);
   RTCZ.setDate(d, M, y - 2000);
-#endif
-}*/
+  #endif
+  }*/
 
 //dwqdqwdqwdqwdqwdqwdqwdwdwddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 void showSerial() {
-   
+
   display.setCursor(10, menuTextY[1]);
   display.print("Today's Temp(C):");
-    display.setCursor(30, menuTextY[3]);
+  display.setCursor(30, menuTextY[3]);
 
   display.print(temp);
-    display.setCursor(30, menuTextY[3]);
- 
+  display.setCursor(30, menuTextY[3]);
+
 }
 //djhhhhhhhhhhhhhhhhhhhhhhhddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 /*
-void timeCharUpdate(uint8_t * newData, uint8_t length) {
+  void timeCharUpdate(uint8_t * newData, uint8_t length) {
   memcpy(TimeData, newData, length);
   newtime = millisOffset();
   //SerialMonitorInterface.println("Time Update Data RX");
-}
+  }
 
-void DSCharUpdate(byte * newData, byte length) {
+  void DSCharUpdate(byte * newData, byte length) {
   newDSdata(newData, length);
-}
+  }
 
-void NSCharUpdate(byte * newData, byte length) {
+  void NSCharUpdate(byte * newData, byte length) {
   newNSdata(newData, length);
-}
+  }
 
-void BLEConnect() {
+  void BLEConnect() {
   //SerialMonitorInterface.println("---------Connect");
   requestSecurity();
-}
+  }
 
-void BLEBond() {
+  void BLEBond() {
   //SerialMonitorInterface.println("---------Bond");
   ANCSInitStep = 0;
-}
+  }
 
-void BLEDisconnect() {
+  void BLEDisconnect() {
   //SerialMonitorInterface.println("---------Disconnect");
   ANCSReset();
   ble_connection_state = false;
   ANCSInitStep = -1;
   advertise("TinyWatch", "7905F431-B5CE-4E99-A40F-4B1E122D00D0");
-}
+  }
 
-void ANCSInit() {
+  void ANCSInit() {
   if (ANCSInitStep == 0)if (!discoverService(&timeService, "1805"))ANCSInitStep++;
   if (ANCSInitStep == 1)if (!discoverService(&ANCSService, "7905F431-B5CE-4E99-A40F-4B1E122D00D0"))ANCSInitStep++;
   if (ANCSInitStep == 2)if (!discoverCharacteristic(&timeService, &currentTimeChar, "2A2B"))ANCSInitStep++;
@@ -474,4 +487,4 @@ void ANCSInit() {
   } else {
     ANCSInitRetry = millisOffset();
   }
-}*/
+  }*/
