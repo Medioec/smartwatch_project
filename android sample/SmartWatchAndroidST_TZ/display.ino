@@ -1,6 +1,8 @@
 const uint8_t displayStateHome = 0x01;
 const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
+const uint8_t displayStateToDo = 0x0A;
+
 
 uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
@@ -31,6 +33,8 @@ void buttonPress(uint8_t buttons) {
   } else if (currentDisplayState == displayStateEditor) {
     if (editorHandler) {
       editorHandler(buttons, 0, 0, NULL);
+    } else if (currentDisplayState == displayStateToDo) {
+    ;
     }
   }
 }

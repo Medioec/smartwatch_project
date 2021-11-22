@@ -77,6 +77,8 @@ void ToDoListStart() {
 
   // Error state, 0 => no error, 1 => too many items
   int ErrorState = 0;
+
+  currentDisplayState = displayStateToDo;
   
   startScreen(&currX, &currY);        // Prints out default state
   
@@ -91,7 +93,7 @@ void ToDoListStart() {
     if(exitList) {
       display.clearScreen();
       display.setCursor(0,0);
-      return;
+      break;
     }
     
     checkButtonStates(&LowerLeftState, &UpperLeftState, &LowerRightState, &UpperRightState, &selectedIndex, &currCount, &currX, &currY, bufferArray, &exitList);  // Check for button inputs.
@@ -121,6 +123,7 @@ void ToDoListStart() {
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
   }
+  return;
 }
 
 //------------------------------------------------------
@@ -280,6 +283,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         delay(500); // Buffer for button press.
         
         *UpperLeftState = 0;
+        currentDisplayState = displayStateMenu;
         viewMenu(backButton);
         *exitList = 1;
         return;
