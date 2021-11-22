@@ -44,10 +44,14 @@ void newMenu(int8_t newIndex) {
 }
 
 //List of items in menu, add more entries here for more menu entries
-static const char PROGMEM mainMenuStrings0[] = "Set date/time";
-static const char PROGMEM mainMenuStrings1[] = "Set auto off";
-static const char PROGMEM mainMenuStrings2[] = "Set brightness";
-static const char PROGMEM mainMenuStrings3[] = "Set Timer";
+static const char PROGMEM mainMenuStrings3[] = "Set date/time";
+static const char PROGMEM mainMenuStrings4[] = "Set auto off";
+static const char PROGMEM mainMenuStrings5[] = "Set brightness";
+static const char PROGMEM mainMenuStrings0[] = "Set Timer";
+//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+static const char PROGMEM mainMenuStrings1[] = "View Temperature";
+//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+static const char PROGMEM mainMenuStrings2[] = "To Do List";
 
 //Update this next
 static const char* const PROGMEM mainMenuStrings[] =
@@ -56,11 +60,13 @@ static const char* const PROGMEM mainMenuStrings[] =
   mainMenuStrings1,
   mainMenuStrings2,
   mainMenuStrings3,
+  mainMenuStrings4,
+  mainMenuStrings5,
 };
 //Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
-  4, //no. of menu items
+  6, //no. of menu items
   mainMenuStrings, //strings
   mainMenu, //selection handler function
 };
@@ -171,23 +177,27 @@ uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 //Menu selection handler
 void mainMenu(uint8_t selection) {
   if (menu_debug_print)SerialMonitorInterface.println("mainMenuHandler");
-  if (selection == 0) {
+  if (selection == 3) {
     newMenu(dateTimeMenuIndex);
   }
-  if (selection == 1) {
+  if (selection == 4) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &sleepTimeout, buffer, NULL);
   }
-  if (selection == 2) {
+  if (selection == 5) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &brightness, buffer, NULL);
   }
-  if (selection == 3) { //code for timer
+  if (selection == 0) { //code for timer
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     user_timer_menu(0, &userTimerSetting, buffer, NULL, &userTimerSetState, &userTimerRunningState);
+  }
+  if (selection == 1) {
+    char buffer[20];
+    viewtemp(0, NULL, 0, NULL);
   }
 }
 
@@ -470,3 +480,69 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
   display.print(F("   "));
   return 0;
 }
+
+//added this bulllshit too llooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
+  if (menu_debug_print)SerialMonitorInterface.println("editInt");
+  if (!button) {
+    if (menu_debug_print)SerialMonitorInterface.println("editIntInit");
+    editIntCallBack = cb;
+    currentDisplayState = displayStateEditor;
+    editorHandler = editInt;
+    currentDigit = 0;
+    originalVal = inVal;
+    currentVal = *originalVal;
+
+    digits[3] = currentVal % 10; currentVal /= 10;
+    digits[2] = currentVal % 10; currentVal /= 10;
+    digits[1] = currentVal % 10; currentVal /= 10;
+    digits[0] = currentVal % 10;
+    currentVal = *originalVal;
+    display.clearWindow(0, 12, 96, 64);
+    display.setFont(font10pt);
+    display.fontColor(defaultFontColor, defaultFontBG);
+
+     display.setCursor(0, menuTextY[0]);
+    display.print(F("< back"));
+    display.setCursor(90, menuTextY[0]);
+   display.setCursor(10, menuTextY[1]);
+    showSerial();
+    display.setCursor(0, menuTextY[3]);
+  
+    
+  
+  } else if (button == upButton) {
+    if (digits[currentDigit] < 9)
+      digits[currentDigit]++;
+  } else if (button == downButton) {
+    if (digits[currentDigit] > 0)
+      digits[currentDigit]--;
+  } else if (button == selectButton) {
+    if (currentDigit < maxDigit - 1) {
+      currentDigit++;
+    } else {
+      //save
+      
+      viewMenu(backButton);
+      if (editIntCallBack) {
+        editIntCallBack();
+        editIntCallBack = NULL;
+      }
+      return 1;
+    }
+  } else if (button == backButton) {
+    if (currentDigit > 0) {
+      currentDigit--;
+    } else {
+      if (menu_debug_print)SerialMonitorInterface.println(F("back"));
+      viewMenu(backButton);
+      return 0;
+    }
+  }
+  
+ 
+ 
+  return 0;
+}
+  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+

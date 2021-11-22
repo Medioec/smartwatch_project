@@ -77,6 +77,8 @@ void ToDoListStart() {
 
   // Error state, 0 => no error, 1 => too many items
   int ErrorState = 0;
+
+  currentDisplayState = displayStateToDo;
   
   
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
@@ -274,7 +276,6 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         delay(500); // Buffer for button press.
         
         *UpperLeftState = 0;
-
         *exitList = 1;
         return;
       }
