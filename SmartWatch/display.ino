@@ -28,6 +28,8 @@ void buttonPress(uint8_t buttons) {
     if (psimHandler) {
       psimHandler(buttons);
     }
+  } else if (currentDisplayState == displayStateToDo) {
+    ;
   }
 }
 
@@ -45,14 +47,14 @@ void viewNotifications(uint8_t button) {
       //display.print(ANCSNotificationTitle());
 
       int line = 0;
-      int totalMessageChars = strlen(ANCSNotificationMessage());
+      int totalMessageChars = strlen(notificationLine2);
       int printedChars = 0;
       while (printedChars < totalMessageChars && line < 3) {
         char tempPrintBuff[40] = "";
         int tempPrintBuffPos = 0;
         while (display.getPrintWidth(tempPrintBuff) < 90 && printedChars < totalMessageChars) {
-          if (!(tempPrintBuffPos == 0 && ANCSNotificationMessage()[printedChars] == ' ')) {
-            tempPrintBuff[tempPrintBuffPos] = ANCSNotificationMessage()[printedChars];
+          if (!(tempPrintBuffPos == 0 && notificationLine2[printedChars] == ' ')) {
+            tempPrintBuff[tempPrintBuffPos] = notificationLine2[printedChars];
             tempPrintBuffPos++;
           }
           printedChars++;
@@ -67,7 +69,7 @@ void viewNotifications(uint8_t button) {
 
       display.setCursor(0, menuTextY[3]);
       display.print(F("< "));
-      display.print(ANCSNotificationNegativeAction());
+      display.print("Clear");
 
       char backStr[] = "Back >";
       int Xpos = 95 - display.getPrintWidth(backStr);
@@ -88,14 +90,14 @@ void viewNotifications(uint8_t button) {
       initHomeScreen();
     } else if (button == selectButton) { //do action
       amtNotifications = 0;
-      ANCSPerformNotificationNegativeAction();
+      //ANCSPerformNotificationNegativeAction();
       currentDisplayState = displayStateHome;
       initHomeScreen();
     }
   }
 }
 
-
+//go to homescreen
 void initHomeScreen() {
   display.clearWindow(0, 12, 96, 64);
   rewriteTime = true;
@@ -167,10 +169,10 @@ void updateMainDisplay() {
       display.setFont(font10pt);
       display.clearWindow(0, menuTextY[2], 96, 13);
       if (amtNotifications) {
-        int printPos = 48 - (display.getPrintWidth(ANCSNotificationTitle()) / 2);
+        int printPos = 48 - (display.getPrintWidth(notificationLine1) / 2);
         if (printPos < 0)printPos = 0;
         display.setCursor(printPos, menuTextY[2]);
-        display.print(ANCSNotificationTitle());
+        display.print(notificationLine1);
       }
       display.setCursor(0, menuTextY[3]);
       display.print(F("< Menu          "));
@@ -431,5 +433,4 @@ void reset_timer_display() {
   for (int i = 0; i < 6; i ++) {
     lastTimerDisplayed[i] = -1;
   }
-  SerialMonitorInterface.println(lastTimerDisplayed[0]);
 }

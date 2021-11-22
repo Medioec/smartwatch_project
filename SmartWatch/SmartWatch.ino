@@ -18,7 +18,7 @@
 #include <TinyScreen.h>
 #include <STBLE.h>
 #include <LibPrintf.h>
-#include "BLEtypes.h"
+#include "BMA250.h" 
 
 #define BLE_DEBUG true
 #define menu_debug_print true
@@ -51,15 +51,15 @@ void wakeHandler() {
 void RTCwakeHandler() {
   //not used
 }
-
+uint8_t ble_can_sleep = false;
 void watchSleep() {
-  if (doVibrate || ANCSRequestStayAwake())
+  if (doVibrate || ble_can_sleep)
     return;
   sleepTime = RTCZ.getEpoch();
   RTCZ.standbyMode();
 }
 #endif
-
+/*
 BLEConn phoneConnection;
 BLEServ timeService;
 BLEServ ANCSService;
@@ -68,13 +68,15 @@ BLEChar NSchar;
 BLEChar CPchar;
 BLEChar DSchar;
 int ANCSInitStep = -1;
-unsigned long ANCSInitRetry = 0;
+unsigned long ANCSInitRetry = 0;*/
 
 uint8_t ble_connection_state = false;
 uint8_t ble_connection_displayed_state = true;
 uint8_t TimeData[20];
 uint32_t newtime = 0;
 
+uint8_t ble_rx_buffer[21];
+uint8_t ble_rx_buffer_len = 0;
 
 uint8_t defaultFontColor = TS_8b_White;
 uint8_t defaultFontBG = TS_8b_Black;
@@ -102,6 +104,8 @@ uint8_t amtNotifications = 0;
 uint8_t lastAmtNotificationsShown = -1;
 unsigned long mainDisplayUpdateInterval = 16;
 unsigned long lastMainDisplayUpdate = 0;
+char notificationLine1[20] = "";
+char notificationLine2[20] = "";
 
 uint8_t vibratePin = 6;
 uint8_t vibratePinActive = HIGH;
@@ -165,6 +169,11 @@ int psVarCpUpProb = 0;
 
 uint8_t (*psimHandler)(uint8_t) = NULL;
 
+//fefewfewfewfewfewfewfewfewfewfewfewfewfewfe  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+BMA250 accel_sensor;
+int x, y, z;
+double temp;
+//fefewfewfewfewfewfwefwfewfefewfewfewfewfewfewf  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 void setup(void)
 {
@@ -198,6 +207,12 @@ void setup(void)
   Wire.begin();
   SerialMonitorInterface.begin(115200);
   //while(!SerialMonitorInterface);
+  //dwqddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+  SerialMonitorInterface.print("Initializing BMA...");
+  // Set up the BMA250 acccelerometer sensor
+  accel_sensor.begin(BMA250_range_2g, BMA250_update_time_64ms); 
+  //dwqdqwdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
   display.begin();
   display.setFlip(true);
   pinMode(vibratePin, OUTPUT);
@@ -205,9 +220,9 @@ void setup(void)
   initHomeScreen();
   requestScreenOn();
   delay(100);
-  BLEsetup(&phoneConnection, "TinyWatch", BLEConnect, BLEDisconnect);
-  useSecurity(BLEBond);
-  advertise("TinyWatch", "7905F431-B5CE-4E99-A40F-4B1E122D00D0");
+  BLEsetup();
+  //useSecurity(BLEBond);
+  //advertise("TinyWatch", "7905F431-B5CE-4E99-A40F-4B1E122D00D0");
 
 #if defined(ARDUINO_ARCH_SAMD)
   //attachInterrupt(TSP_PIN_BT1, wakeHandler, FALLING);
@@ -235,7 +250,25 @@ uint32_t millisOffset() {
 }
 
 void loop() {
-  BLEProcess();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
+//ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ accel_sensor.read();//This function gets new data from the acccelerometer
+  // Get the acceleration values from the sensor and store them into global variables
+  // (Makes reading the rest of the program easier)
+  temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
+
+  // If the BMA250 is not found, nor connected correctly, these values will be produced
+  // by the sensor 
+  
+   // if we have correct sensor readings: 
+                 //Print to Serial Monitor or Plotter
+    
+  // The BMA250 can only poll new sensor values every 64ms, so this delay
+  // will ensure that we can continue to read values
+  delay(25);
+  // ***Without the delay, there would not be any sensor output*** 
+//dwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
+  /*BLEProcess();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
   if (!ANCSInitStep) {
     ANCSInit();
   } else if (ANCSInitRetry && millisOffset() - ANCSInitRetry > 1000) {
@@ -259,7 +292,33 @@ void loop() {
     rewriteMenu = true;
     updateMainDisplay();
     doVibrate = millisOffset();
+  }*/
+  aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
+  if (ble_rx_buffer_len) {
+    if (ble_rx_buffer[0] == 'D') {
+      //expect date/time string- example: D2015 03 05 11 48 42
+      lastReceivedTime = millisOffset();
+      updateTime(ble_rx_buffer + 1);
+      requestScreenOn();
+    }
+    if (ble_rx_buffer[0] == '1') {
+      memcpy(notificationLine1, ble_rx_buffer + 1, ble_rx_buffer_len - 1);
+      notificationLine1[ble_rx_buffer_len - 1] = '\0';
+      amtNotifications = 1;
+      requestScreenOn();
+    }
+    if (ble_rx_buffer[0] == '2') {
+      memcpy(notificationLine2, ble_rx_buffer + 1, ble_rx_buffer_len - 1);
+      notificationLine2[ble_rx_buffer_len - 1] = '\0';
+      amtNotifications = 1;
+      requestScreenOn();
+      rewriteMenu = true;
+      updateMainDisplay();
+      doVibrate = millisOffset();
+    }
+    ble_rx_buffer_len = 0;
   }
+
   if (doVibrate) {
     uint32_t td = millisOffset() - doVibrate;
     if (td > 0 && td < 100) {
@@ -280,7 +339,7 @@ void loop() {
       display.off();
     }
 #if defined(ARDUINO_ARCH_SAMD)
-    BLEProcess();
+    //BLEProcess();
     //watchSleep();
 #endif
   }
@@ -288,6 +347,23 @@ void loop() {
   if (psimRunState) {
     tickGame();
   }
+}
+
+void updateTime(uint8_t * b) {
+  int y, M, d, k, m, s;
+  char * next;
+  y = strtol((char *)b, &next, 10);
+  M = strtol(next, &next, 10);
+  d = strtol(next, &next, 10);
+  k = strtol(next, &next, 10);
+  m = strtol(next, &next, 10);
+  s = strtol(next, &next, 10);
+#if defined (ARDUINO_ARCH_AVR)
+  setTime(k, m, s, d, M, y);
+#elif defined(ARDUINO_ARCH_SAMD)
+  RTCZ.setTime(k, m, s);
+  RTCZ.setDate(d, M, y - 2000);
+#endif
 }
 
 int requestScreenOn() {
@@ -301,6 +377,7 @@ int requestScreenOn() {
   return 0;
 }
 
+//called in main loop to check for buttons
 void checkButtons() {
   byte buttons = display.getButtons();
   if (buttonReleased && buttons) {
@@ -314,6 +391,7 @@ void checkButtons() {
   }
 }
 
+/*
 void newTimeData() {
   int y, M, d, k, m, s;
   y = (TimeData[1] << 8) | TimeData[0];
@@ -330,8 +408,22 @@ void newTimeData() {
   RTCZ.setTime(k, m, s);
   RTCZ.setDate(d, M, y - 2000);
 #endif
-}
+}*/
 
+//dwqdqwdqwdqwdqwdqwdqwdwdwddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+void showSerial() {
+   
+  display.setCursor(10, menuTextY[1]);
+  display.print("Today's Temp(C):");
+    display.setCursor(30, menuTextY[3]);
+
+  display.print(temp);
+    display.setCursor(30, menuTextY[3]);
+ 
+}
+//djhhhhhhhhhhhhhhhhhhhhhhhddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
+/*
 void timeCharUpdate(uint8_t * newData, uint8_t length) {
   memcpy(TimeData, newData, length);
   newtime = millisOffset();
@@ -382,4 +474,4 @@ void ANCSInit() {
   } else {
     ANCSInitRetry = millisOffset();
   }
-}
+}*/
