@@ -249,6 +249,7 @@ int requestScreenOn() {
   }
   return 0;
 }
+/*--------------------------------------------------------- Copy from Here ----------------------------------------------------------*/
 void showCard() {
   
 
@@ -554,6 +555,7 @@ void showCard() {
     display.print("King of Pentacles");
     }
 }
+/*---------------------------------------------------------------- To here ---------------------------------------------------*/
 
 void checkButtons() {
   byte buttons = display.getButtons();
