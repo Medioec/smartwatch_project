@@ -1,3 +1,19 @@
+
+
+
+#include <TinyScreen.h>
+#include <SPI.h>
+#include <Wire.h>
+
+// --------------------------------------------------- @ ERIC ADD PLS
+// PLEASE ADD IN STUFF FROM HERE ONWARDS
+//------------------------------------------------------
+// Setup Bluetooth Configuration
+//------------------------------------------------------
+
+#define MAX_CHARS 20 // Max Characters
+#define MAX_ITEMS 4 // Max  To Do List Items
+
 #define  BLACK           0x00
 #define BLUE            0xE0
 #define RED             0x03
@@ -9,17 +25,6 @@
 #define BROWN           0x32
 #define SELECTED        0x80
 
-#define MAX_CHARS 20 // Max Characters
-
-#define MAX_ITEMS 4 // Max  To Do List Items
-
-#include <TinyScreen.h>
-#include <SPI.h>
-#include <Wire.h>
-
-//------------------------------------------------------
-// Setup Bluetooth Configuration
-//------------------------------------------------------
 #include <STBLE.h>
 //Debug output adds extra flash and memory requirements!
 #ifndef BLE_DEBUG
@@ -49,18 +54,13 @@ void error1(int* currX, int* currY, int* ErrorState);
 // Button LowerRight -> Up
 // Button UpperRight -> Down
 
-// Store all the to do list items in an array
-// If user selects, print that selected item as font color SELECTED, if not White
-// If user deletes, remove from array
-// If array length more than 4, stores at next page.
-
 char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items for ToDoList
 //------------------------------------------------------
 // Main Loop
 //------------------------------------------------------
 void ToDoListStart() {
   int currX = 0;                      // Current X pointer
-  int currY = 0;                      // Current Y pointer
+  int currY = 12;                      // Current Y pointer
   int exitList = 0;
    
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
@@ -78,8 +78,9 @@ void ToDoListStart() {
   // Error state, 0 => no error, 1 => too many items
   int ErrorState = 0;
   
-  startScreen(&currX, &currY);        // Prints out default state
   
+  addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
+  addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
   printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
 
@@ -89,8 +90,8 @@ void ToDoListStart() {
   
   while(1) {
     if(exitList) {
-      display.clearScreen();
-      display.setCursor(0,0);
+      display.clearWindow(0, 12, 96, 64);
+      display.setFont(font10pt);
       return;
     }
     
@@ -112,15 +113,34 @@ void ToDoListStart() {
       // Reprint the screen, with new item
       
       // Clear screen, reset X and Y pointers
-      display.clearScreen(); 
+      display.clearWindow(0, 12, 96, 64);
       currX = 0;
-      currY = 0;
+      currY = 12;
       
       // Print current bufferarray
-      startScreen(&currX, &currY);
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
   }
+    display.clearWindow(0, 12, 96, 64);
+    viewMenu(backButton);
+
+    int currentDay = RTCZ.getDay();
+    int currentMonth = RTCZ.getMonth();
+    int currentYear = RTCZ.getYear();
+
+    display.setFont(font10pt);
+    display.fontColor(defaultFontColor, defaultFontBG);
+    display.setCursor(2, 2);
+
+    const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    time_t currentTime = RTCZ.getEpoch();
+    struct tm* wkdaycalc = gmtime(&currentTime);
+    display.print(wkday[wkdaycalc->tm_wday]);
+    display.print(' ');
+    display.print(RTCZ.getMonth());
+    display.print('/');
+    display.print(RTCZ.getDay());
+    display.print(F("  "));
 }
 
 //------------------------------------------------------
@@ -128,12 +148,12 @@ void ToDoListStart() {
 //------------------------------------------------------
 void error1(int* currX, int* currY, int* ErrorState) {
   int tmpX = 0;
-  int tmpY = 0;
+  int tmpY = 12;
 
   char* errorText = "ERROR!!!";
   char* errorText2 = "More than 4 items detected";
   
-  display.clearScreen();
+  display.clearWindow(0, 12, 96, 64);
   display.setCursor(tmpX, tmpY);
   display.setFont(liberationSans_10ptFontInfo); 
   display.fontColor(RED,BLACK);
@@ -146,32 +166,6 @@ void error1(int* currX, int* currY, int* ErrorState) {
 
   delay(2000); // Error display length
   display.setCursor(*currX, *currY); // Move cursor back to original location
-}
-
-
-//------------------------------------------------------
-// Print Main Menu
-//------------------------------------------------------
-void startScreen(int* currX, int* currY){
-  // Display Main Menu.
-
-  display.setCursor(*currX, *currY);
-  
-  char* displayText = "To Do List";
-  display.setFont(liberationSans_10ptFontInfo); 
-  display.fontColor(WHITE,BLACK);
-  
-  int fontHeight = display.getFontHeight();
-  int fontWidth = display.getPrintWidth(displayText);
-  
-  display.setFlip(true);
-  display.print(displayText);
-  display.drawLine(0, fontHeight, 94, fontHeight, RED);
-  display.setFont(liberationSans_8ptFontInfo);
-
-  // Change current X and Y values
-  *currY = *currY + fontHeight; // Move Y by Font Height
-  *currY = *currY + 1;          // Move Y by Line width
 }
 
 //------------------------------------------------------
@@ -280,7 +274,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         delay(500); // Buffer for button press.
         
         *UpperLeftState = 0;
-        initHomeScreen();
+
         *exitList = 1;
         return;
       }
@@ -300,12 +294,11 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         }
 
         // Clear screen, reset X and Y pointers
-        display.clearScreen(); 
+        display.clearWindow(0, 12, 96, 64); 
         *currX = 0;
-        *currY = 0;
+        *currY = 12;
         
         // Reprint the screen, with new item
-        startScreen(currX, currY);
         printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
         *UpperRightState = 0;
       }
@@ -320,12 +313,12 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         removeItem(bufferArray, selectedIndex, currCount);
 
         // Clear screen, reset X and Y pointers
-        display.clearScreen(); 
+        display.clearWindow(0, 12, 96, 64);
         *currX = 0;
-        *currY = 0;
+        *currY = 12;
         
         // Reprint the screen, with new item
-        startScreen(currX, currY);
+
         printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
         
 
@@ -348,19 +341,20 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         }
 
         // Clear screen, reset X and Y pointers
-        display.clearScreen(); 
+        display.clearWindow(0, 12, 96, 64);
         *currX = 0;
-        *currY = 0;
+        *currY = 12;
         
         // Reprint the screen, with new item
-        startScreen(currX, currY);
         printDisplay(bufferArray, selectedIndex, currCount, currX, currY);
         
         *LowerRightState = 0;
       }
     }
 }
-
+// -------------------------------------------------------------------------------- @ERIC STOP ADDING
+// @ERIC STOP ADDING
+// -------------------------------------------------------------------------------- @ERIC STOP ADDING
 
 typedef struct
 {
