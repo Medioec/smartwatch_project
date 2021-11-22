@@ -157,7 +157,9 @@ void updateMainDisplay() {
   }
   updateDateDisplay();
   updateBLEstatusDisplay();
-  displayBattery();
+  if (currentDisplayState != displayPSIM) {
+    displayBattery();
+  }
   if (currentDisplayState == displayStateHome) {
     updateTimeDisplay();
     if (rewriteMenu || lastAmtNotificationsShown != amtNotifications) {
@@ -188,7 +190,7 @@ void updateMainDisplay() {
     }
   }
   else if (currentDisplayState == displayPSIM) {
-
+    updatePsimDisplay();
   }
   lastMainDisplayUpdate = millisOffset();
 }

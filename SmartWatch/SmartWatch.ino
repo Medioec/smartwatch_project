@@ -17,6 +17,7 @@
 #include <Wire.h>
 #include <TinyScreen.h>
 #include <STBLE.h>
+#include <LibPrintf.h>
 #include "BLEtypes.h"
 
 #define BLE_DEBUG true
@@ -145,16 +146,18 @@ int psVarInitLaunch = 1;
 int psVarspeed = 50;
 int psVarContinueAllowed = 0;
 int psimRunState = 0;
+uint32_t psRelTime = 0;
 
 //PVAR
+int psVarScore = 0;
 int psVarSpreadability = 0;
 int psVarSeverity = 0;
 int psVarhotAug = 0;
 int psVarColdAug = 0;
 
 //AVAR
-int psVarNumS = 0;
-float psVarNumT = 7900000000;
+float psVarNumTotal = 7900000000;
+float psVarNumSpread = 1;
 int psVarSpreadResist = 0;
 int psVarCounterProgress = 0;
 int psVarSrUpProb = 0;
@@ -282,9 +285,9 @@ void loop() {
 #endif
   }
   checkButtons();
-  /*if (psimRunState) {
-    psimProcess(0);
-  }*/
+  if (psimRunState) {
+    tickGame();
+  }
 }
 
 int requestScreenOn() {
