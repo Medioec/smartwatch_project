@@ -60,7 +60,7 @@ int currX = 0;                      // Current X pointer
 //------------------------------------------------------
 // Main Loop
 //------------------------------------------------------
-void ToDoListStart() {
+void Tarot() {
   
   
   char* bufferString = (char*)malloc(MAX_CHARS * sizeof(char));
@@ -185,25 +185,8 @@ void startScreen(int* currX, int* currY){
 
 //Clear the screen for each push of button
 
-void showClear(int currX, int currY){
-  display.clearScreen(); 
-  currX = 0;
-  currY = 0;
-  startScreen(&currX, &currY);
-  printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
-  
-  
-  }
-  // printing items
-  void printItem(int* currX, int* currY, char* item) {
-  char newString[MAX_CHARS] = ""; // Adds "-" before to do item
-  strcat(newString, item);
-  display.setCursor(*currX, *currY);
-  display.print(newString);
 
-  // Change current X and Y values
-  //*currY = *currY + display.getFontHeight(); // Move Y by Font Height
-}
+
 //------------------------------------------------------
 // Print display on watch
 //------------------------------------------------------
@@ -241,27 +224,7 @@ void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int*
 //------------------------------------------------------
 // Removes Item from Array
 //------------------------------------------------------
-void removeItem(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currCount) {
-  // Remove select item index from array.
-  if (*currCount > 0){
-    bool deleted = false;
-    for (int i = 0; i < MAX_ITEMS; i++) {
-      
-      if(i == *selectedIndex) {
-        deleted = true;
-      }
-      if(deleted) {
-        // If index in range, shift next index in
-        if(i + 1 <= MAX_ITEMS - 1){
-          strcpy(bufferArray[i],bufferArray[i+1]);
-        } 
-      }
-    }
-  
-    *selectedIndex = 0;
-    *currCount -= 1;
-  }
-}
+
 
 //------------------------------------------------------
 // Check for Bluetooth Input, if avail, save to bufferstring
@@ -532,10 +495,13 @@ void mainMenu(uint8_t selection) {
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &brightness, buffer, NULL);
   }
+  /*----------------- Add this ----------------------*/
   if (selection == 3) {
+    
     viewTemp(0, NULL, 0, NULL);
   }
 }
+/*----------------------------------- Copy this -------------------------------------*/
 uint8_t viewTemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
   if (!button) {
@@ -543,16 +509,7 @@ uint8_t viewTemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
     editIntCallBack = cb;
     //currentDisplayState = displayStateEditor;
     editorHandler = editInt;
-    //currentDigit = 0;
-    //originalVal = inVal;
-    //currentVal = *originalVal;
-/*
-    digits[3] = currentVal % 10; currentVal /= 10;
-    digits[2] = currentVal % 10; currentVal /= 10;
-    digits[1] = currentVal % 10; currentVal /= 10;
-    digits[0] = currentVal % 10;
-    currentVal = *originalVal;
-    */
+
     display.clearWindow(0, 12, 96, 64);
     display.setFont(font10pt);
     display.fontColor(defaultFontColor, defaultFontBG);
@@ -589,6 +546,7 @@ uint8_t viewTemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
     
   }
 }
+/*------------------------ To this -------------------------------*/
 
 uint8_t dateTimeSelection = 0;
 int dateTimeVariable = 0;
