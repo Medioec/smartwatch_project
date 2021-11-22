@@ -636,7 +636,7 @@ void ToDoListStart() {
     if(exitList) {
       display.clearWindow(0, 12, 96, 64);
       display.setFont(font10pt);
-      return;
+      break;
     }
     
     checkButtonStates(&LowerLeftState, &UpperLeftState, &LowerRightState, &UpperRightState, &selectedIndex, &currCount, &currX, &currY, bufferArray, &exitList);  // Check for button inputs.
@@ -665,26 +665,28 @@ void ToDoListStart() {
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
   }
-    display.clearWindow(0, 12, 96, 64);
-    viewMenu(backButton);
+  display.clearWindow(0, 12, 96, 64);
+  viewMenu(backButton);
+  currentDisplayState = displayStateMenu;
+  
+  int currentDay = RTCZ.getDay();
+  int currentMonth = RTCZ.getMonth();
+  int currentYear = RTCZ.getYear();
 
-    int currentDay = RTCZ.getDay();
-    int currentMonth = RTCZ.getMonth();
-    int currentYear = RTCZ.getYear();
+  display.setFont(font10pt);
+  display.fontColor(defaultFontColor, defaultFontBG);
+  display.setCursor(2, 2);
 
-    display.setFont(font10pt);
-    display.fontColor(defaultFontColor, defaultFontBG);
-    display.setCursor(2, 2);
-
-    const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    time_t currentTime = RTCZ.getEpoch();
-    struct tm* wkdaycalc = gmtime(&currentTime);
-    display.print(wkday[wkdaycalc->tm_wday]);
-    display.print(' ');
-    display.print(RTCZ.getMonth());
-    display.print('/');
-    display.print(RTCZ.getDay());
-    display.print(F("  "));
+  const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+  time_t currentTime = RTCZ.getEpoch();
+  struct tm* wkdaycalc = gmtime(&currentTime);
+  display.print(wkday[wkdaycalc->tm_wday]);
+  display.print(' ');
+  display.print(RTCZ.getMonth());
+  display.print('/');
+  display.print(RTCZ.getDay());
+  display.print(F("  "));
+  return;
 }
 
 //------------------------------------------------------
