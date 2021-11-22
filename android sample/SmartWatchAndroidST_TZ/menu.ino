@@ -280,7 +280,7 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
         delay(500); // Buffer for button press.
         
         *UpperLeftState = 0;
-        viewMenu(backButton);
+        initHomeScreen();
         *exitList = 1;
         return;
       }
