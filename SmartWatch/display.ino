@@ -3,6 +3,7 @@ const uint8_t displayStateHome = 0x01;
 const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
 const uint8_t displayStateTimer = 0x04;
+const uint8_t displayStateToDo = 0x0A;
 
 uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
@@ -41,6 +42,8 @@ void buttonPress(uint8_t buttons) {
     if (userTimerHandler) {
       userTimerHandler(buttons, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
     }
+  } else if (currentDisplayState == displayStateToDo) {
+    ;
   }
 }
 
@@ -58,14 +61,14 @@ void viewNotifications(uint8_t button) {
       //display.print(ANCSNotificationTitle());
 
       int line = 0;
-      int totalMessageChars = strlen(ANCSNotificationMessage());
+      int totalMessageChars = strlen(notificationLine2);
       int printedChars = 0;
       while (printedChars < totalMessageChars && line < 3) {
         char tempPrintBuff[40] = "";
         int tempPrintBuffPos = 0;
         while (display.getPrintWidth(tempPrintBuff) < 90 && printedChars < totalMessageChars) {
-          if (!(tempPrintBuffPos == 0 && ANCSNotificationMessage()[printedChars] == ' ')) {
-            tempPrintBuff[tempPrintBuffPos] = ANCSNotificationMessage()[printedChars];
+          if (!(tempPrintBuffPos == 0 && notificationLine2[printedChars] == ' ')) {
+            tempPrintBuff[tempPrintBuffPos] = notificationLine2[printedChars];
             tempPrintBuffPos++;
           }
           printedChars++;
@@ -80,7 +83,7 @@ void viewNotifications(uint8_t button) {
 
       display.setCursor(0, menuTextY[3]);
       display.print(F("< "));
-      display.print(ANCSNotificationNegativeAction());
+      display.print("Clear");
 
       char backStr[] = "Back >";
       int Xpos = 95 - display.getPrintWidth(backStr);
@@ -101,7 +104,7 @@ void viewNotifications(uint8_t button) {
       initHomeScreen();
     } else if (button == selectButton) { //do action
       amtNotifications = 0;
-      ANCSPerformNotificationNegativeAction();
+      //ANCSPerformNotificationNegativeAction();
       currentDisplayState = displayStateHome;
       initHomeScreen();
     }
@@ -178,10 +181,10 @@ void updateMainDisplay() {
       display.setFont(font10pt);
       display.clearWindow(0, menuTextY[2], 96, 13);
       if (amtNotifications) {
-        int printPos = 48 - (display.getPrintWidth(ANCSNotificationTitle()) / 2);
+        int printPos = 48 - (display.getPrintWidth(notificationLine1) / 2);
         if (printPos < 0)printPos = 0;
         display.setCursor(printPos, menuTextY[2]);
-        display.print(ANCSNotificationTitle());
+        display.print(notificationLine1);
       }
       display.setCursor(0, menuTextY[3]);
       display.print(F("< Menu          "));
