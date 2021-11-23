@@ -24,7 +24,7 @@ void buttonPress(uint8_t buttons) {
     if (userTimerHandler) {
       userTimerHandler(buttons, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
     }
-  } else if (currentDisplayState == displayPSIM) {
+  } else if (currentDisplayState == displayPSIM||currentDisplayState == displayStateGame) {
     if (psimHandler) {
       psimHandler(buttons);
     }
@@ -159,7 +159,7 @@ void updateMainDisplay() {
   }
   updateDateDisplay();
   updateBLEstatusDisplay();
-  if (currentDisplayState != displayPSIM) {
+  if (currentDisplayState != displayPSIM && currentDisplayState != displayStateGame) {
     displayBattery();
   }
   if (currentDisplayState == displayStateHome) {
@@ -191,9 +191,9 @@ void updateMainDisplay() {
       update_user_timer(userTimerLastValue);
     }
   }
-  else if (currentDisplayState == displayPSIM) {
+  /*else if (currentDisplayState == displayPSIM) {
     updatePsimDisplay();
-  }
+  }*/
   lastMainDisplayUpdate = millisOffset();
 }
 

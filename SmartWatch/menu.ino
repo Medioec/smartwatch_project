@@ -199,13 +199,9 @@ void mainMenu(uint8_t selection) {
     editInt(0, &brightness, buffer, NULL);
   }
   if (selection == 0) { //code for timer
-    char buffer[20];
-    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
-    user_timer_menu(0, &userTimerSetting, buffer, NULL, &userTimerSetState, &userTimerRunningState);
+    user_timer_menu(0, &userTimerSetting, 0, NULL, &userTimerSetState, &userTimerRunningState);
   }
   if (selection == 3) { //To add functionality for timer
-    char buffer[20];
-    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     psimProcess(0);
   }
   if (selection == 1) {
@@ -216,7 +212,7 @@ void mainMenu(uint8_t selection) {
     ToDoListStart();
   }
   if (selection == 4) {
-    ;//tarot
+    Tarot(0, NULL, 0, NULL);//tarot
   }
 }
 
@@ -909,5 +905,49 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
 
       *LowerRightState = 0;
     }
+  }
+}
+
+uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
+  if (menu_debug_print)SerialMonitorInterface.println("editInt");
+  if (!button) {
+    if (menu_debug_print)SerialMonitorInterface.println("editIntInit");
+    editIntCallBack = cb;
+    //currentDisplayState = displayStateEditor;
+    editorHandler = editInt;
+
+    display.clearWindow(0, 12, 96, 64);
+    display.setFont(font10pt);
+    display.fontColor(defaultFontColor, defaultFontBG);
+
+     display.setCursor(0, menuTextY[0]);
+    display.print(F("< back"));
+    display.setCursor(90, menuTextY[0]);
+    display.setCursor(10, menuTextY[1]);
+    showCard();
+    display.setCursor(0, menuTextY[3]);
+  
+    
+  
+  } 
+  if (button == downButton) {
+    showCard();
+  } 
+  else if (button == selectButton) {
+      //save
+      
+      viewMenu(backButton);
+      if (editIntCallBack) {
+        editIntCallBack();
+        editIntCallBack = NULL;
+      }
+      return 1;
+    
+  } else if (button == backButton) {
+
+      if (menu_debug_print)SerialMonitorInterface.println(F("back"));
+      viewMenu(backButton);
+      return 0;
+    
   }
 }

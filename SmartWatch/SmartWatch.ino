@@ -124,6 +124,7 @@ const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
 const uint8_t displayStateTimer = 0x04;
 const uint8_t displayPSIM = 0x05;
+const uint8_t displayStateGame = 0x06;
 const uint8_t displayStateToDo = 0x0A;
 
 
@@ -181,6 +182,8 @@ upgrades computer {0.1, 2000, 0};
 upgrades lounge {0.1, 2000, 0};
 
 uint8_t (*psimHandler)(uint8_t) = NULL;
+
+int rando = 0;//for tarot
 
 //fefewfewfewfewfewfewfewfewfewfewfewfewfewfe  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 BMA250 accel_sensor;
@@ -488,3 +491,312 @@ void showSerial() {
     ANCSInitRetry = millisOffset();
   }
   }*/
+void showCard() {
+  char ofCups[] = " of Cups";
+  char ofSwords[] = " of Swords";
+  char ofPentacles[] = " of Pentacles";
+  char ofWands[] = " of Wands";
+  char page[] = "Page";
+  char knight[] = "Knight";
+  char king[] = "King";
+  char queen[] = "Queen";
+  char ace[] = "Ace";
+  char num2[] = "Two";
+  char num3[] = "Three";
+  char num4[] = "Four";
+  char num5[] = "Five";
+  char num6[] = "Six";
+  char num7[] = "Seven";
+  char num8[] = "Eight";
+  char num9[] = "Nine";
+  char num10[] = "Ten";
+  char buffer[20] = "";
+
+  rando = random(1,78); //You need a random range 1 more than the number of statements you have
+  rando = round(rando);
+  rando = 1;
+  
+  if (rando >= 3 and rando <= 14) {
+    strcpy(buffer,ofCups);
+  }
+  
+  if (rando == 1){
+    strcat(buffer,num2);
+    strcat(buffer,ofCups);
+    display.print(buffer);
+    
+
+  }
+  if (rando == 2){
+  
+  display.print("The High Priestess");
+  
+  }
+  if (rando == 3){
+  strcat(buffer,num4);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 4){
+  strcat(buffer,num5);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 5){
+  strcat(buffer,num6);
+  strcat(buffer,ofCups);  
+  display.print(buffer);  
+  }
+  if (rando == 6){
+  strcat(buffer,num7);
+  strcat(buffer,ofCups);  
+  display.print(buffer);  
+  }
+  if (rando == 7){
+  strcat(buffer,num8);
+  strcat(buffer,ofCups);  
+  display.print(buffer);  
+  }
+  if (rando == 8){
+  strcat(buffer,num9);
+  strcat(buffer,ofCups);  
+  display.print(buffer);  
+  }
+  if (rando == 9){
+  strcat(buffer,num10);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 10){
+  strcat(buffer,page);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 11){
+  strcat(buffer,ace);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 12){
+  strcat(buffer,knight);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 13){
+  strcat(buffer,queen);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 14){
+  strcat(buffer,king);
+  strcat(buffer,ofCups);  
+  display.print(buffer);
+  }
+  if (rando == 15){
+  display.print("The Fool");
+  }
+  if (rando == 16){
+  display.print("The Magician");
+  }
+  if (rando == 17){
+  display.print("The High Priestess");
+  }
+  if (rando == 18){
+  display.print("The Empress");
+  }
+  if (rando == 19){
+  display.print("The Emperor");
+  }
+  if (rando == 20){
+  display.print("The Hierophant");
+  }
+  if (rando == 21){
+  display.print("The Lovers");
+  }
+  if (rando == 22){
+  display.print("The Chariot");
+  }
+  if (rando == 23){
+  display.print("Strength");
+  }
+  if (rando == 24){
+  display.print("The Hermit");
+  }
+  if (rando == 25){
+  display.print("Wheel of Fortune");
+  }
+  if (rando == 26){
+  display.print("Justice");
+  }
+  if (rando == 27){
+  display.print("The Hanged Man");
+  }
+  if (rando == 28){
+  display.print("Death");
+  }
+  if (rando == 29){
+  display.print("Temperance");
+  }
+  if (rando == 30){
+  display.print("The Devil");
+  }
+  if (rando == 31){
+  display.print("The Tower");
+  }
+  if (rando == 32){
+  display.print("The Star");
+  }
+  if (rando == 33){
+  display.print("The Moon");
+  }
+  if (rando == 34){
+  display.print("The Sun");
+  }
+  if (rando == 35){
+  display.print("Judgement");
+  }
+  if (rando == 36){
+  display.print("The World");
+  }
+  if (rando == 37){
+  strcat(buffer,ace);
+  strcat(buffer,ofWands);  
+  display.print(buffer);
+  }
+  if (rando == 38){
+  display.print("Two of Wands");
+  }
+  if (rando == 39){
+  
+  display.print("Three of Wands");
+  }
+  if (rando == 40){
+  
+  display.print("Four of Wands");
+  }
+  if (rando == 41){
+  
+  display.print("Five of Wands");
+  }
+  if (rando == 42){
+  
+  display.print("Six of Wands");
+  }
+  if (rando == 43){
+  
+  display.print("Seven of Wands");
+  }
+  if (rando == 44){
+  
+  display.print("Eight of Wands");
+  }
+  if (rando == 45){
+  
+  display.print("Nine of Wands");
+  }
+  if (rando == 46){
+  
+  display.print("Ten of Wands");
+  }
+  if (rando == 47){
+  
+  display.print("Page of Wands");
+  }
+  if (rando == 48){
+  
+  display.print("Knight of Wands");
+  }
+  if (rando == 49){
+  
+  display.print("Queen of Wands");
+  }
+  if (rando == 50){
+  
+  display.print("King of Wands");
+  }
+  if (rando == 51){
+  
+  display.print("Ace of Swords");
+  }
+  if (rando == 52){
+  
+  display.print("Two of Swords");
+  }
+  if (rando == 53){
+  
+  display.print("Three of Swords");
+  }
+  if (rando == 54){
+  
+  display.print("Four of Swords");
+  }
+  if (rando == 55){
+  display.print("Five of Swords");
+  }
+  if (rando == 56){
+  display.print("Six of Swords");
+  }
+  if (rando == 57){
+  display.print("Seven of Swords");
+  }
+  if (rando == 58){
+  display.print("Eight of Swords");
+  }
+  if (rando == 59){
+  display.print("Nine of Swords");
+  }
+  if (rando == 60){
+  display.print("Ten of Swords");
+  }
+  if (rando == 61){
+  display.print("Page of Swords");
+  }
+  if (rando == 62){
+  display.print("Knight of Swords");
+  }
+  if (rando == 63){
+  display.print("Queen of Swords");
+  }
+  if (rando == 64){
+  display.print("Ace of Pentacles");
+  }
+  if (rando == 65){
+  display.print("Two of Pentacles");
+  }
+  if (rando == 66){
+  display.print("Three of Pentacles");
+  }
+  if (rando == 67){
+  display.print("Four of Pentacles");
+  }
+  if (rando == 68){
+  display.print("Five of Pentacles");
+  }
+  if (rando == 69){
+  display.print("Six of Pentacles");
+  }
+  if (rando == 70){
+  display.print("Seven of Pentacles");
+  }
+  if (rando == 71){
+  display.print("Eight of Pentacles");
+  }
+  if (rando == 72){
+  display.print("Nine of Pentacles");
+  }
+  if (rando == 73){
+  display.print("Ten of Pentacles");
+  }
+  if (rando == 74){
+  display.print("Page of Pentacles");
+  }
+  if (rando == 75){
+  display.print("Knight of Pentacles");
+  }
+  if (rando == 76){
+  display.print("Queen of Pentacles");
+  }
+  if (rando == 77){
+  display.print("King of Pentacles");
+  }
+}

@@ -1,22 +1,17 @@
-#define TICKMS 50
-
 //uint8_t (*psimHandler)(uint8_t) = NULL;
-uint8_t buttonBuffer;
 uint8_t displayLineY[7] = {0, 9, 18, 27, 36, 45, 54};
 uint8_t buttonY[2] = {12, 48};
 
 int psimMenuLine = 0;
+int tickMs = 1000;
+
 char empCountString[4] = "";
 char fundString[8] = "";
-int windowOpen = 0;
-int settingsOpen = 0;
-int upgradeOpen = 0;
-int statsOpen = 0;
-int tickMs = 1000;
-int menuSelect = 0;
-int menuOffset = 0;
-int menuOptionNum = 5;
-char upgradeOptionArr[5][20] = {"Intern", "DipGrad", "Grad", "Computer", "Lounge"};
+bool windowOpen = false;
+bool settingsOpen = false;
+bool upgradeOpen = false;
+bool statsOpen = false;
+char upgradeOptionArr[5][9] = {"Intern", "DipGrad", "Grad", "Computer", "Lounge"};
 int upgradeCostArr[5] = {intern.cost, dipGrad.cost, grad.cost, computer.cost, lounge.cost};
 
 uint8_t psimProcess(uint8_t button)
@@ -28,7 +23,6 @@ uint8_t psimProcess(uint8_t button)
   {
     if (!button)
     {
-      int exitStatus = 0;
       psimRunState = 1;
     
       display.clearWindow(0, 0, 96, 64);
@@ -88,16 +82,18 @@ uint8_t psimProcess(uint8_t button)
       if (psimMenuLine == 1 && psVarContinueAllowed){
         psVarInitLaunch = 0;
         display.clearWindow(0, 0, 96, 64);
-        drawPsimMenu();
+        //drawPsimMenu();
+        psimGame(0);
         return 1;
       }
       else if (psimMenuLine == 0) {
         psVarInitLaunch = 0;
         display.clearWindow(0, 0, 96, 64);
-        drawPsimMenu();
+        //drawPsimMenu();
         psim_initialise_vars();
         psVarContinueAllowed = 1;
         psimMenuLine = 1;
+        psimGame(0);
         return 1;
       }
       else if (psimMenuLine == 2) {
@@ -154,124 +150,132 @@ uint8_t psimProcess(uint8_t button)
       display.fontColor(inactiveFontColor, inactiveFontBG);
     }
   }
-  else if (psVarInitLaunch == 0) //After Menu
-  {
-    if (!button) {
+}
+  /*else if (psVarInitLaunch == 0) //After Menu
+  {*/
+uint8_t psimGame(uint8_t button) {
+  psimHandler = psimGame;
+  currentDisplayState = displayStateGame;
+
+  int menuSelect = 0;
+  int menuOffset = 0;
+
+  if (!button) {
+    drawPsimMenu();
+  }
+  else if (button == TSButtonUpperLeft) {
+    if (!windowOpen && !settingsOpen && !upgradeOpen && !statsOpen) {
+      psVarInitLaunch = 1;
+      display.clearWindow(0, 0, 96, 64);
+      psVarInitLaunch = 1;
+      psimProcess(0);
+      return 1;
+    } else {
+      windowOpen = false;
+      settingsOpen = false;
+      upgradeOpen = false;
+      statsOpen = false;
       drawPsimMenu();
+      fundString[0] = 0;
     }
-    else if (button == TSButtonUpperLeft) {
-      if (windowOpen == 0 && settingsOpen == 0 && upgradeOpen == 0 && statsOpen == 0) {
-        psVarInitLaunch = 1;
-        display.clearWindow(0, 0, 96, 64);
-        psVarInitLaunch = 1;
-        psimProcess(0);
-        return 1;
-      } else {
-        windowOpen = 0;
-        settingsOpen = 0;
-        upgradeOpen = 0;
-        statsOpen = 0;
-        drawPsimMenu();
-        fundString[0] = 0;
-      }
 
-    }
-    else if (button == TSButtonUpperRight) {
-      if (!windowOpen && !upgradeOpen) {
-        windowOpen = 1;
-        upgradeOpen = 1;
-        drawWindow();
-        drawUpgradeMenu();
-        drawUpgradeSelect();
-        fundString[0] = 0;
-      } else if (upgradeOpen) {
-        if (menuSelect > 0) {
-          menuSelect--;
-        } else if (menuOffset > 0) {
-          menuOffset--;
-        }
-        drawUpgradeSelect();
+  }
+  else if (button == TSButtonUpperRight) {
+    if (!windowOpen && !upgradeOpen) {
+      windowOpen = true;
+      upgradeOpen = true;
+      drawWindow();
+      drawUpgradeMenu();
+      drawUpgradeSelect(menuSelect,menuOffset);
+      fundString[0] = 0;
+    } else if (upgradeOpen) {
+      if (menuSelect > 0) {
+        menuSelect--;
+      } else if (menuOffset > 0) {
+        menuOffset--;
       }
+      drawUpgradeSelect(menuSelect,menuOffset);
+    }
 
-    }
-    else if (button == TSButtonLowerRight) {
-      if (!settingsOpen && !windowOpen){
-        windowOpen = 1;
-        statsOpen = 1;
-        drawWindow();
-        drawStatsMenu();
-      } else if (settingsOpen) {
-        if (psVarspeed < 3) {
-          psVarspeed++;
-          tickMs -= 500;
-          display.setCursor(60, displayLineY[2]);
-          display.print(psVarspeed);
-        }
-      } else if (upgradeOpen) {
-        if (menuSelect < 2) {
-          menuSelect++;
-        } else if (menuOffset < 2) {
-          menuOffset++;
-        }
-        drawUpgradeSelect();
+  }
+  else if (button == TSButtonLowerRight) {
+    if (!settingsOpen && !windowOpen){
+      windowOpen = true;
+      statsOpen = true;
+      drawWindow();
+      drawStatsMenu();
+    } else if (settingsOpen) {
+      if (psVarspeed < 3) {
+        psVarspeed++;
+        tickMs -= 500;
+        display.setCursor(60, displayLineY[2]);
+        display.print(psVarspeed);
       }
+    } else if (upgradeOpen) {
+      if (menuSelect < 2) {
+        menuSelect++;
+      } else if (menuOffset < 2) {
+        menuOffset++;
+      }
+      drawUpgradeSelect(menuSelect,menuOffset);
     }
-    else if (button == TSButtonLowerLeft) {
-      if (!settingsOpen && !windowOpen){
-        windowOpen = 1;
-        settingsOpen = 1;
-        drawWindow();
-        drawSettingsMenu();
-      } else if (settingsOpen) {
-        if (psVarspeed > 1) {
-          psVarspeed--;
-          tickMs += 500;
-          display.setCursor(60, displayLineY[2]);
-          display.print(psVarspeed);
-        }
-      } else if (upgradeOpen) {
-        int selection = menuOffset + menuSelect;
-        if (player.funds - upgradeCostArr[selection] >= 0) {
-          player.funds -= upgradeCostArr[selection];
-          switch (selection) {
-            case 0:
-            if (intern.number <= 99) {
-              intern.number += 1;
-            }
-            break;
-            case 1:
-            if (dipGrad.number <= 99) {
-              dipGrad.number += 1;
-            }
-            break;
-            case 2:
-            if (grad.number <= 99) {
-              grad.number += 1;
-            }
-            break;
-            case 3:
-            if (computer.level <= 99) {
-              computer.level += 1;
-              computer.cost = (player.manning) * 2000;
-              upgradeCostArr[selection] = computer.cost;
-              computer.modifier = 0.1 * computer.level;
-            }
-            break;
-            case 4:
-            if (lounge.level <= 99) {
-              lounge.level += 1;
-              lounge.cost = (1 + lounge.level) * 2000;
-              upgradeCostArr[selection] = lounge.cost;
-              lounge.modifier = 0.1 * lounge.level;
-            }
-            break;
+  }
+  else if (button == TSButtonLowerLeft) {
+    if (!settingsOpen && !windowOpen){
+      windowOpen = true;
+      settingsOpen = true;
+      drawWindow();
+      drawSettingsMenu();
+    } else if (settingsOpen) {
+      if (psVarspeed > 1) {
+        psVarspeed--;
+        tickMs += 500;
+        display.setCursor(60, displayLineY[2]);
+        display.print(psVarspeed);
+      }
+    } else if (upgradeOpen) {
+      int selection = menuOffset + menuSelect;
+      if (player.funds - upgradeCostArr[selection] >= 0) {
+        player.funds -= upgradeCostArr[selection];
+        switch (selection) {
+          case 0:
+          if (intern.number <= 99) {
+            intern.number += 1;
           }
-          drawUpgradeSelect();
+          break;
+          case 1:
+          if (dipGrad.number <= 99) {
+            dipGrad.number += 1;
+          }
+          break;
+          case 2:
+          if (grad.number <= 99) {
+            grad.number += 1;
+          }
+          break;
+          case 3:
+          if (computer.level <= 99) {
+            computer.level += 1;
+            computer.cost = (player.manning) * 2000;
+            upgradeCostArr[selection] = computer.cost;
+            computer.modifier = 0.1 * computer.level;
+          }
+          break;
+          case 4:
+          if (lounge.level <= 99) {
+            lounge.level += 1;
+            lounge.cost = (1 + lounge.level) * 2000;
+            upgradeCostArr[selection] = lounge.cost;
+            lounge.modifier = 0.1 * lounge.level;
+          }
+          break;
         }
+        drawUpgradeSelect(menuSelect,menuOffset);
       }
     }
   }
 }
+
 
 
 
@@ -291,7 +295,7 @@ void updateVars() {
     player.funds += (intern.income * intern.number + dipGrad.income * dipGrad.number + grad.income * grad.number) * (1 + lounge.modifier + computer.modifier);
   }
   player.manning = intern.number + dipGrad.number + grad.number;
-  if (currentDisplayState == displayPSIM) {updatePsimDisplay();}
+  if (currentDisplayState == displayStateGame) {updatePsimDisplay();}
 }
 
 void tickGame() {
@@ -302,7 +306,7 @@ void tickGame() {
 }
 
 void updatePsimDisplay() {
-  if (psVarInitLaunch == 0 && windowOpen == 0) {
+  if (psVarInitLaunch == 0 && !windowOpen) {
     char currString[8];
     if (player.funds/1000000000 >1) {
       snprintf(currString, 8, "%6.2fB", player.funds/1000000000);
@@ -453,7 +457,7 @@ void drawUpgradeMenu() {
   display.print('v');
 }
 
-void drawUpgradeSelect() {
+void drawUpgradeSelect(int menuSelect, int menuOffset) {
   display.clearWindow(2, 9, 84, 27);
   display.fontColor(inactiveFontColor, inactiveFontBG);
   char cost[3][8] = {"","",""};
