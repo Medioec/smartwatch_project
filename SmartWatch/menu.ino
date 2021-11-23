@@ -1,5 +1,3 @@
-
-
 typedef struct
 {
   const uint8_t amtLines;
@@ -45,19 +43,19 @@ void newMenu(int8_t newIndex) {
   }
 }
 
-//List of items in menu, add more entries here for more menu entries
+// -------------------------------------------------------------------
+// List of items in menu, add more entries here for more menu entries
+// -------------------------------------------------------------------
 static const char PROGMEM mainMenuStrings5[] = "Set date/time";
 static const char PROGMEM mainMenuStrings6[] = "Set auto off";
 static const char PROGMEM mainMenuStrings7[] = "Set brightness";
 static const char PROGMEM mainMenuStrings0[] = "Set Timer";
-//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 static const char PROGMEM mainMenuStrings1[] = "View Temperature";
-//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 static const char PROGMEM mainMenuStrings2[] = "To Do List";
 static const char PROGMEM mainMenuStrings3[] = "Dream Startup";
 static const char PROGMEM mainMenuStrings4[] = "Tarot";
 
-//Update this next
+// Also Update Struct
 static const char* const PROGMEM mainMenuStrings[] =
 {
   mainMenuStrings0,
@@ -70,6 +68,7 @@ static const char* const PROGMEM mainMenuStrings[] =
   mainMenuStrings7,
 
 };
+
 //Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
@@ -77,6 +76,8 @@ const menu_info mainMenuInfo =
   mainMenuStrings, //strings
   mainMenu, //selection handler function
 };
+
+// -------------------------------------------------------------------
 
 
 static const char PROGMEM dateTimeMenuStrings0[] = "Set Year";
@@ -117,6 +118,9 @@ int *originalVal;
 uint8_t dateTimeSelection = 0;
 int dateTimeVariable = 0;
 
+// -------------------------------------------------------------------
+// Edit Date Time Menu
+// -------------------------------------------------------------------
 uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
   if (!button) {
@@ -184,7 +188,9 @@ uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   return 0;
 }
 
-//Menu selection handler
+// -------------------------------------------------------------------
+// Main Menu Selection Handler
+// -------------------------------------------------------------------
 void mainMenu(uint8_t selection) {
   if (menu_debug_print)SerialMonitorInterface.println("mainMenuHandler");
   if (selection == 5) {
@@ -253,7 +259,9 @@ void dateTimeMenu(uint8_t selection) {
   }
 }
 
-//call this to view menu
+// -------------------------------------------------------------------
+// View Menu
+// -------------------------------------------------------------------
 void viewMenu(uint8_t button) {
   if (menu_debug_print)SerialMonitorInterface.print("viewMenu ");
   if (menu_debug_print)SerialMonitorInterface.println(button);
@@ -320,6 +328,10 @@ void viewMenu(uint8_t button) {
   }
 }
 
+
+// -------------------------------------------------------------------
+// User Timer Menu
+// -------------------------------------------------------------------
 int timerDigits[6];
 
 uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(), int *setState, int *runState) {
@@ -496,7 +508,9 @@ uint8_t user_timer_menu(uint8_t button, int *inVal, char *intName, void (*cb)(),
   return 0;
 }
 
-//added this bulllshit too llooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooool  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+// -------------------------------------------------------------------
+// View Temperature
+// -------------------------------------------------------------------
 uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
   if (!button) {
@@ -559,10 +573,10 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 
   return 0;
 }
-//change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+
 
 //------------------------------------------------------
-// Setup Bluetooth Configuration
+// ToDoList
 //------------------------------------------------------
 
 #define MAX_CHARS 20 // Max Characters
@@ -580,7 +594,6 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 #define SELECTED        0x80
 
 #include <STBLE.h>
-//Debug output adds extra flash and memory requirements!
 #ifndef BLE_DEBUG
 #define BLE_DEBUG true
 #endif
@@ -590,7 +603,6 @@ uint8_t viewtemp(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 #elif defined(ARDUINO_ARCH_SAMD)
 #define SerialMonitorInterface SerialUSB
 #endif
-
 
 #define PIPE_UART_OVER_BTLE_UART_TX_TX 0
 
@@ -610,7 +622,7 @@ void error1(int* currX, int* currY, int* ErrorState);
 
 char bufferArray[MAX_ITEMS][MAX_CHARS + 1]; // Array to store all items for ToDoList
 //------------------------------------------------------
-// Main Loop
+// ToDoList - Main Loop
 //------------------------------------------------------
 void ToDoListStart() {
   int currX = 0;                      // Current X pointer
@@ -677,28 +689,6 @@ void ToDoListStart() {
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
   }
-  /*display.clearWindow(0, 12, 96, 64);
-  viewMenu(backButton);
-  currentDisplayState = displayStateMenu;
-
-  int currentDay = RTCZ.getDay();
-  int currentMonth = RTCZ.getMonth();
-  int currentYear = RTCZ.getYear();
-
-  display.setFont(font10pt);
-  display.fontColor(defaultFontColor, defaultFontBG);
-  display.setCursor(2, 2);
-
-  const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-  time_t currentTime = RTCZ.getEpoch();
-  struct tm* wkdaycalc = gmtime(&currentTime);
-  display.print(wkday[wkdaycalc->tm_wday]);
-  display.print(' ');
-  display.print(RTCZ.getMonth());
-  display.print('/');
-  display.print(RTCZ.getDay());
-  display.print(F("  "));
-  return;*/
   display.clearWindow(0, 12, 96, 64);
   viewMenu(backButton);
   currentDisplayState = displayStateMenu;
@@ -707,7 +697,7 @@ void ToDoListStart() {
 }
 
 //------------------------------------------------------
-// Print Too Many Items Error, (error 1)
+// ToDoList - Print Too Many Items Error, (error 1)
 //------------------------------------------------------
 void error1(int* currX, int* currY, int* ErrorState) {
   int tmpX = 0;
@@ -732,7 +722,7 @@ void error1(int* currX, int* currY, int* ErrorState) {
 }
 
 //------------------------------------------------------
-// Print display on watch
+// ToDoList - Print display on watch
 //------------------------------------------------------
 void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currSize, int* currX, int* currY) {
   for (int i = 0; i < *currSize; i++) {
@@ -751,7 +741,7 @@ void printDisplay(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* cu
 }
 
 //------------------------------------------------------
-// Adds Item to Array
+// ToDoList - Adds Item to Array
 //------------------------------------------------------
 void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int* ErrorState) {
   if (*currCount < MAX_ITEMS) {
@@ -765,7 +755,7 @@ void addItem(char bufferArray[][MAX_CHARS + 1], char* item, int* currCount, int*
 }
 
 //------------------------------------------------------
-// Removes Item from Array
+// ToDoList - Removes Item from Array
 //------------------------------------------------------
 void removeItem(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* currCount) {
   // Remove select item index from array.
@@ -790,7 +780,7 @@ void removeItem(char bufferArray[][MAX_CHARS + 1], int* selectedIndex, int* curr
 }
 
 //------------------------------------------------------
-// Check for Bluetooth Input, if avail, save to bufferstring
+// ToDoList - Check for Bluetooth Input, if avail, save to bufferstring
 //------------------------------------------------------
 void checkBluetooth (char* myBufferString) {
   aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
@@ -827,7 +817,7 @@ void checkBluetooth (char* myBufferString) {
 }
 
 //------------------------------------------------------
-// Check for Button Presses, if found execute
+// ToDoList - Check for Button Presses, if found execute
 //------------------------------------------------------
 void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRightState, int* UpperRightState, int* selectedIndex, int* currCount, int* currX, int* currY, char bufferArray[MAX_ITEMS][MAX_CHARS + 1], int* exitList) {
   // If Upper Left Button is pressed.
@@ -915,6 +905,9 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
   }
 }
 
+//------------------------------------------------------
+// Tarot Card App
+//------------------------------------------------------
 uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   //if (menu_debug_print)SerialMonitorInterface.println("editInt");
   if (!button) {
@@ -933,9 +926,6 @@ uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
     display.setCursor(10, menuTextY[1]);
     showCard();
     display.setCursor(0, menuTextY[3]);
-  
-    
-  
   } 
   if (button == downButton) {
     showCard();

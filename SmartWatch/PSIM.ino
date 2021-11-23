@@ -1,3 +1,7 @@
+//-------------------------------------------------------------------------------
+// Idle Game Integrated into SmartWatch
+//-------------------------------------------------------------------------------
+
 uint8_t displayLineY[7] = {0, 9, 18, 27, 36, 45, 54};
 uint8_t buttonY[2] = {12, 48};
 
@@ -248,9 +252,6 @@ uint8_t psimGame(uint8_t button) {
     }
   }
 }
-
-
-
 
 void psim_initialise_vars() {
   intern = (employee){.income = 10, .cost = 1000, .number = 1};

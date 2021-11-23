@@ -2,7 +2,9 @@ void (*menuHandler)(uint8_t) = NULL;
 uint8_t (*editorHandler)(uint8_t, int*, char*, void (*)()) = NULL;
 uint8_t (*userTimerHandler)(uint8_t, int*, char*, void (*)(), int*, int*) = NULL;
 
-
+//-------------------------------------
+// Button Presses
+//-------------------------------------
 void buttonPress(uint8_t buttons) {
   if (currentDisplayState == displayStateHome) {
     if (buttons == viewButton) {
@@ -35,6 +37,9 @@ void buttonPress(uint8_t buttons) {
   }
 }
 
+//-------------------------------------
+// Notifications
+//-------------------------------------
 void viewNotifications(uint8_t button) {
   if (!button) {
     if (menu_debug_print)SerialMonitorInterface.println("viewNotificationsInit");
@@ -66,9 +71,7 @@ void viewNotifications(uint8_t button) {
         display.print((char*)tempPrintBuff);
         line++;
       }
-
-
-
+      
       display.setCursor(0, menuTextY[3]);
       display.print(F("< "));
       display.print("Clear");
@@ -99,7 +102,9 @@ void viewNotifications(uint8_t button) {
   }
 }
 
-//go to homescreen
+//-------------------------------------
+// Initialise Home Screen
+//-------------------------------------
 void initHomeScreen() {
   display.clearWindow(0, 12, 96, 64);
   rewriteTime = true;
@@ -112,6 +117,9 @@ uint8_t lastDisplayedDay = -1;
 uint8_t lastDisplayedMonth = -1;
 uint8_t lastDisplayedYear = -1;
 
+//-------------------------------------
+// Update Date Display
+//-------------------------------------
 void updateDateDisplay() {
 #if defined (ARDUINO_ARCH_AVR)
   int currentDay = day();
@@ -154,6 +162,9 @@ void updateDateDisplay() {
   updateBLEstatusDisplay();
 }
 
+//-------------------------------------
+// Update Main Display
+//-------------------------------------
 void updateMainDisplay() {
   if (lastSetBrightness != brightness) {
     display.setBrightness(brightness);
@@ -205,6 +216,9 @@ uint8_t lastHourDisplayed = -1;
 uint8_t lastMinuteDisplayed = -1;
 uint8_t lastSecondDisplayed = -1;
 
+//-------------------------------------
+// Update Time Display
+//-------------------------------------
 void updateTimeDisplay() {
   int currentHour, currentMinute, currentSecond;
 #if defined (ARDUINO_ARCH_AVR)
@@ -272,6 +286,9 @@ void updateTimeDisplay() {
   rewriteTime = false;
 }
 
+//-------------------------------------
+// Update Bluetooth Display
+//-------------------------------------
 void updateBLEstatusDisplay() {
   if (ble_connection_state == ble_connection_displayed_state)
     return;
@@ -289,6 +306,9 @@ void updateBLEstatusDisplay() {
   display.drawLine(x, y - s - s, x + s, y - s, color);
 }
 
+//-------------------------------------
+// Display Battery
+//-------------------------------------
 void displayBattery() {
   int result = 0;
 #if defined (ARDUINO_ARCH_AVR)
@@ -379,6 +399,9 @@ void displayBattery() {
 
 int lastTimerDisplayed[6];
 
+//-------------------------------------
+// Update User Timer
+//-------------------------------------
 uint8_t update_user_timer(int timerval) {
   int maxTimerDigits = 6;
   int timerDigits[6];
@@ -430,6 +453,9 @@ uint8_t update_user_timer(int timerval) {
   }
 }
 
+//-------------------------------------
+// Reset Timer
+//-------------------------------------
 void reset_timer_display() {
   PRINTF("Timer Display Reset\n");
   for (int i = 0; i < 6; i ++) {
@@ -437,6 +463,9 @@ void reset_timer_display() {
   }
 }
 
+//-------------------------------------
+// Draw Date Bar
+//-------------------------------------
 void drawDateBar() {
   int currentDay = RTCZ.getDay();
   int currentMonth = RTCZ.getMonth();

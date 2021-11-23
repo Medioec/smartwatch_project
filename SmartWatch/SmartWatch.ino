@@ -185,11 +185,9 @@ uint8_t (*psimHandler)(uint8_t) = NULL;
 
 int rando = 0;//for tarot
 
-//fefewfewfewfewfewfewfewfewfewfewfewfewfewfe  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 BMA250 accel_sensor;
 int x, y, z;
 double temp;
-//fefewfewfewfewfewfwefwfewfefewfewfewfewfewfewf  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 void setup(void)
 {
@@ -222,12 +220,9 @@ void setup(void)
 #endif
   Wire.begin();
   SerialMonitorInterface.begin(115200);
-  //while(!SerialMonitorInterface);
-  //dwqddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
   SerialMonitorInterface.print("Initializing BMA...");
   // Set up the BMA250 acccelerometer sensor
   accel_sensor.begin(BMA250_range_2g, BMA250_update_time_64ms);
-  //dwqdqwdqwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
   display.begin();
   display.setFlip(true);
@@ -266,23 +261,15 @@ uint32_t millisOffset() {
 }
 
 void loop() {
-  //ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
   accel_sensor.read();//This function gets new data from the acccelerometer
   // Get the acceleration values from the sensor and store them into global variables
   // (Makes reading the rest of the program easier)
   temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
 
-  // If the BMA250 is not found, nor connected correctly, these values will be produced
-  // by the sensor
-
-  // if we have correct sensor readings:
-  //Print to Serial Monitor or Plotter
-
   // The BMA250 can only poll new sensor values every 64ms, so this delay
   // will ensure that we can continue to read values
   delay(25);
   // ***Without the delay, there would not be any sensor output***
-  //dwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwdddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
   /*BLEProcess();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
     if (!ANCSInitStep) {
@@ -407,26 +394,6 @@ void checkButtons() {
   }
 }
 
-/*
-  void newTimeData() {
-  int y, M, d, k, m, s;
-  y = (TimeData[1] << 8) | TimeData[0];
-  M = TimeData[2];
-  d = TimeData[3];
-  k = TimeData[4];
-  m = TimeData[5];
-  s = TimeData[6];
-  //dayOfWeek = timeData[7];
-  //fractionOfSecond = timeData[8];
-  #if defined (ARDUINO_ARCH_AVR)
-  setTime(k, m, s, d, M, y);
-  #elif defined(ARDUINO_ARCH_SAMD)
-  RTCZ.setTime(k, m, s);
-  RTCZ.setDate(d, M, y - 2000);
-  #endif
-  }*/
-
-//dwqdqwdqwdqwdqwdqwdqwdwdwddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 void showSerial() {
 
   display.setCursor(10, menuTextY[1]);
@@ -437,7 +404,6 @@ void showSerial() {
   display.setCursor(30, menuTextY[3]);
 
 }
-//djhhhhhhhhhhhhhhhhhhhhhhhddddddddddddddddddddddddddddddddddddddddddddddddddd  //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 
 /*
   void timeCharUpdate(uint8_t * newData, uint8_t length) {
@@ -491,6 +457,10 @@ void showSerial() {
     ANCSInitRetry = millisOffset();
   }
   }*/
+
+// -------------------------
+// Tarot Card App
+// -------------------------
 void showCard() {
   char buffer[20] = "";
   char* prefix[] = {"Queen","Ace", "Two", "Three", "Four", "Five", "Six", "Seven","Eight","Nine","Ten","Page","Knight","King"};
