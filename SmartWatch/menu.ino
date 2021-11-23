@@ -18,10 +18,12 @@ uint8_t lastSelectionLine = -1;
 
 
 void newMenu(int8_t newIndex) {
-  currentMenuLine = 0;
   lastMenuLine = -1;
-  currentSelectionLine = 0;
   lastSelectionLine = -1;
+  if (newIndex == 0) {
+    currentMenuLine = 0;
+    currentSelectionLine = 0;
+  }
   if (newIndex >= 0) {
     menuHistory[menuHistoryIndex++] = currentMenu;
     currentMenu = newIndex;
@@ -697,6 +699,9 @@ void ToDoListStart() {
   display.print(RTCZ.getDay());
   display.print(F("  "));
   return;*/
+  display.clearWindow(0, 12, 96, 64);
+  viewMenu(backButton);
+  currentDisplayState = displayStateMenu;
   drawDateBar();
   return;
 }

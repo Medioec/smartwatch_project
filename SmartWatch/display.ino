@@ -438,10 +438,6 @@ void reset_timer_display() {
 }
 
 void drawDateBar() {
-  display.clearWindow(0, 12, 96, 64);
-  viewMenu(backButton);
-  currentDisplayState = displayStateMenu;
-
   int currentDay = RTCZ.getDay();
   int currentMonth = RTCZ.getMonth();
   int currentYear = RTCZ.getYear();

@@ -11,6 +11,8 @@ bool windowOpen = false;
 bool settingsOpen = false;
 bool upgradeOpen = false;
 bool statsOpen = false;
+int menuSelect = 0;
+int menuOffset = 0;
 char upgradeOptionArr[5][9] = {"Intern", "DipGrad", "Grad", "Computer", "Lounge"};
 int upgradeCostArr[5] = {intern.cost, dipGrad.cost, grad.cost, computer.cost, lounge.cost};
 
@@ -124,9 +126,6 @@ uint8_t psimProcess(uint8_t button)
 uint8_t psimGame(uint8_t button) {
   psimHandler = psimGame;
   currentDisplayState = displayStateGame;
-
-  int menuSelect = 0;
-  int menuOffset = 0;
 
   if (!button) {
     drawPsimMenu();
