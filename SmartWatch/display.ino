@@ -28,8 +28,10 @@ void buttonPress(uint8_t buttons) {
     if (psimHandler) {
       psimHandler(buttons);
     }
-  } else if (currentDisplayState == displayStateToDo) {
-    ;
+  } else if (currentDisplayState == 0x99) {
+    if (editorHandler) {
+      editorHandler(buttons, 0, 0, NULL);
+    }
   }
 }
 
@@ -433,4 +435,29 @@ void reset_timer_display() {
   for (int i = 0; i < 6; i ++) {
     lastTimerDisplayed[i] = -1;
   }
+}
+
+void drawDateBar() {
+  display.clearWindow(0, 12, 96, 64);
+  viewMenu(backButton);
+  currentDisplayState = displayStateMenu;
+
+  int currentDay = RTCZ.getDay();
+  int currentMonth = RTCZ.getMonth();
+  int currentYear = RTCZ.getYear();
+
+  display.setFont(font10pt);
+  display.fontColor(defaultFontColor, defaultFontBG);
+  display.setCursor(2, 2);
+
+  const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+  time_t currentTime = RTCZ.getEpoch();
+  struct tm* wkdaycalc = gmtime(&currentTime);
+  display.print(wkday[wkdaycalc->tm_wday]);
+  display.print(' ');
+  display.print(RTCZ.getMonth());
+  display.print('/');
+  display.print(RTCZ.getDay());
+  display.print(F("  "));
+  return;
 }

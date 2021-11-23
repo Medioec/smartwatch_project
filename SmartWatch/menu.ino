@@ -675,7 +675,7 @@ void ToDoListStart() {
       printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
     }
   }
-  display.clearWindow(0, 12, 96, 64);
+  /*display.clearWindow(0, 12, 96, 64);
   viewMenu(backButton);
   currentDisplayState = displayStateMenu;
 
@@ -696,6 +696,8 @@ void ToDoListStart() {
   display.print('/');
   display.print(RTCZ.getDay());
   display.print(F("  "));
+  return;*/
+  drawDateBar();
   return;
 }
 
@@ -909,12 +911,12 @@ void checkButtonStates(int* LowerLeftState, int* UpperLeftState, int* LowerRight
 }
 
 uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
-  if (menu_debug_print)SerialMonitorInterface.println("editInt");
+  //if (menu_debug_print)SerialMonitorInterface.println("editInt");
   if (!button) {
-    if (menu_debug_print)SerialMonitorInterface.println("editIntInit");
+    //if (menu_debug_print)SerialMonitorInterface.println("editIntInit");
     editIntCallBack = cb;
-    //currentDisplayState = displayStateEditor;
-    editorHandler = editInt;
+    currentDisplayState = 0x99;
+    editorHandler = Tarot;
 
     display.clearWindow(0, 12, 96, 64);
     display.setFont(font10pt);
@@ -932,22 +934,19 @@ uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   } 
   if (button == downButton) {
     showCard();
+    return 0;
   } 
   else if (button == selectButton) {
-      //save
-      
-      viewMenu(backButton);
-      if (editIntCallBack) {
-        editIntCallBack();
-        editIntCallBack = NULL;
-      }
+      showCard();
       return 1;
     
   } else if (button == backButton) {
 
-      if (menu_debug_print)SerialMonitorInterface.println(F("back"));
+      //if (menu_debug_print)SerialMonitorInterface.println(F("back"));
+      display.clearScreen();
       viewMenu(backButton);
       return 0;
     
   }
+  return 0;
 }

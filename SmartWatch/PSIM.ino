@@ -57,24 +57,8 @@ uint8_t psimProcess(uint8_t button)
       }
     }
     else if (button == TSButtonUpperLeft) {
-      display.clearWindow(0, 0, 96, 64);
-      int currentDay = RTCZ.getDay();
-      int currentMonth = RTCZ.getMonth();
-      int currentYear = RTCZ.getYear();
-
-      display.setFont(font10pt);
-      display.fontColor(defaultFontColor, defaultFontBG);
-      display.setCursor(2, 2);
-
-      const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-      time_t currentTime = RTCZ.getEpoch();
-      struct tm* wkdaycalc = gmtime(&currentTime);
-      display.print(wkday[wkdaycalc->tm_wday]);
-      display.print(' ');
-      display.print(RTCZ.getMonth());
-      display.print('/');
-      display.print(RTCZ.getDay());
-      display.print(F("  "));
+      display.clearScreen();
+      drawDateBar();
       viewMenu(backButton);
       return 1;
     }
@@ -101,23 +85,7 @@ uint8_t psimProcess(uint8_t button)
         display.clearWindow(0, 0, 96, 64);
         currentDisplayState = displayStateHome;
         psimMenuLine = 0;
-        int currentDay = RTCZ.getDay();
-        int currentMonth = RTCZ.getMonth();
-        int currentYear = RTCZ.getYear();
-
-        display.setFont(font10pt);
-        display.fontColor(defaultFontColor, defaultFontBG);
-        display.setCursor(2, 2);
-
-        const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-        time_t currentTime = RTCZ.getEpoch();
-        struct tm* wkdaycalc = gmtime(&currentTime);
-        display.print(wkday[wkdaycalc->tm_wday]);
-        display.print(' ');
-        display.print(RTCZ.getMonth());
-        display.print('/');
-        display.print(RTCZ.getDay());
-        display.print(F("  "));
+        drawDateBar();
         initHomeScreen();
         return 0;
       }
@@ -177,6 +145,7 @@ uint8_t psimGame(uint8_t button) {
       statsOpen = false;
       drawPsimMenu();
       fundString[0] = 0;
+      updatePsimDisplay();
     }
 
   }
@@ -188,6 +157,7 @@ uint8_t psimGame(uint8_t button) {
       drawUpgradeMenu();
       drawUpgradeSelect(menuSelect,menuOffset);
       fundString[0] = 0;
+      updatePsimDisplay();
     } else if (upgradeOpen) {
       if (menuSelect > 0) {
         menuSelect--;
@@ -403,23 +373,23 @@ void drawStatsMenu () {
   display.fontColor(TS_8b_White, inactiveFontBG);
   display.setCursor(5, displayLineY[1]);
   display.print("Interns:");
-  display.setCursor(50, displayLineY[1]);
+  display.setCursor(55, displayLineY[1]);
   display.print(intern.number);
   display.setCursor(5, displayLineY[2]);
   display.print("DipGrads:");
-  display.setCursor(50, displayLineY[2]);
+  display.setCursor(55, displayLineY[2]);
   display.print(dipGrad.number);
   display.setCursor(5, displayLineY[3]);
   display.print("Grads:");
-  display.setCursor(50, displayLineY[3]);
+  display.setCursor(55, displayLineY[3]);
   display.print(grad.number);
   display.setCursor(5, displayLineY[4]);
   display.print("Computer:");
-  display.setCursor(50, displayLineY[4]);
+  display.setCursor(55, displayLineY[4]);
   display.print(computerbuffer);
   display.setCursor(5, displayLineY[5]);
   display.print("Lounge:");
-  display.setCursor(50, displayLineY[5]);
+  display.setCursor(55, displayLineY[5]);
   display.print(loungebuffer);
 }
 
@@ -469,7 +439,7 @@ void drawUpgradeSelect(int menuSelect, int menuOffset) {
     } else if (upgradeCostArr[menuOffset + i]/1000000 >1) {
       snprintf(cost[i], 8, "%iM", costArrayMember/1000000);
     } else if (upgradeCostArr[menuOffset + i]/1000 >1) {
-      snprintf(cost[i], 8, "%iK", costArrayMember/1000);
+      snprintf(cost[i], 8, "%ik", costArrayMember/1000);
     } else {
       snprintf(cost[i], 8, "%i", costArrayMember);
     }
