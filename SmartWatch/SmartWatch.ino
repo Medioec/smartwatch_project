@@ -468,8 +468,8 @@ void showCard() {
 
   rando = random(1,78); //You need a random range 1 more than the number of statements you have
   //rando = round(rando);
-  display.setCursor(0, menuTextY[2]);
-  display.clearWindow(0, menuTextY[2], 95, 9);
+  display.setCursor(7, menuTextY[2]);
+  display.clearWindow(7, menuTextY[2], 95, 9);
   if (rando <= 14*4) {
     rando = random(0,14);
     strcat(buffer, prefix[rando]);

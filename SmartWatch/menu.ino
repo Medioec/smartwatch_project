@@ -938,7 +938,7 @@ uint8_t Tarot(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   } else if (button == backButton) {
 
       //if (menu_debug_print)SerialMonitorInterface.println(F("back"));
-      display.clearScreen();
+      
       viewMenu(backButton);
       return 0;
     
