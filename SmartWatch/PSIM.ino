@@ -1,4 +1,3 @@
-//uint8_t (*psimHandler)(uint8_t) = NULL;
 uint8_t displayLineY[7] = {0, 9, 18, 27, 36, 45, 54};
 uint8_t buttonY[2] = {12, 48};
 
@@ -121,14 +120,15 @@ uint8_t psimProcess(uint8_t button)
     }
   }
 }
-  /*else if (psVarInitLaunch == 0) //After Menu
-  {*/
+
 uint8_t psimGame(uint8_t button) {
   psimHandler = psimGame;
   currentDisplayState = displayStateGame;
 
   if (!button) {
     drawPsimMenu();
+    fundString[0] = 0;
+    updatePsimDisplay();
   }
   else if (button == TSButtonUpperLeft) {
     if (!windowOpen && !settingsOpen && !upgradeOpen && !statsOpen) {
@@ -297,7 +297,6 @@ void updatePsimDisplay() {
     if (strcmp(currString, fundString) ) {
       strcpy(fundString, currString);
       display.setCursor(50, displayLineY[3]);
-      //display.clearWindow(45, 27, 94, 29);
       display.clearWindow(50, 27, 45, 9);
       display.print(fundString);
     }
