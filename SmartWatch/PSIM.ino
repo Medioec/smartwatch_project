@@ -42,6 +42,10 @@ uint8_t psimProcess(uint8_t button)
       display.setCursor(90, buttonY[1]);
       display.print('v');
       display.setCursor(20, displayLineY[0]);
+      display.drawLine(16,23,16,57,TS_8b_White);
+      display.drawLine(16,23,80,23,TS_8b_White);
+      display.drawLine(80,23,80,57,TS_8b_White);
+      display.drawLine(16,57,80,57,TS_8b_White);
       display.fontColor(TS_8b_Yellow, inactiveFontBG);
       display.print("The Dream");
       display.setCursor(25, displayLineY[1]);
@@ -60,6 +64,23 @@ uint8_t psimProcess(uint8_t button)
     }
     else if (button == TSButtonUpperLeft) {
       display.clearWindow(0, 0, 96, 64);
+      int currentDay = RTCZ.getDay();
+      int currentMonth = RTCZ.getMonth();
+      int currentYear = RTCZ.getYear();
+
+      display.setFont(font10pt);
+      display.fontColor(defaultFontColor, defaultFontBG);
+      display.setCursor(2, 2);
+
+      const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+      time_t currentTime = RTCZ.getEpoch();
+      struct tm* wkdaycalc = gmtime(&currentTime);
+      display.print(wkday[wkdaycalc->tm_wday]);
+      display.print(' ');
+      display.print(RTCZ.getMonth());
+      display.print('/');
+      display.print(RTCZ.getDay());
+      display.print(F("  "));
       viewMenu(backButton);
       return 1;
     }
@@ -84,6 +105,23 @@ uint8_t psimProcess(uint8_t button)
         display.clearWindow(0, 0, 96, 64);
         currentDisplayState = displayStateHome;
         psimMenuLine = 0;
+        int currentDay = RTCZ.getDay();
+        int currentMonth = RTCZ.getMonth();
+        int currentYear = RTCZ.getYear();
+
+        display.setFont(font10pt);
+        display.fontColor(defaultFontColor, defaultFontBG);
+        display.setCursor(2, 2);
+
+        const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        time_t currentTime = RTCZ.getEpoch();
+        struct tm* wkdaycalc = gmtime(&currentTime);
+        display.print(wkday[wkdaycalc->tm_wday]);
+        display.print(' ');
+        display.print(RTCZ.getMonth());
+        display.print('/');
+        display.print(RTCZ.getDay());
+        display.print(F("  "));
         initHomeScreen();
         return 0;
       }
@@ -134,6 +172,7 @@ uint8_t psimProcess(uint8_t button)
         upgradeOpen = 0;
         statsOpen = 0;
         drawPsimMenu();
+        fundString[0] = 0;
       }
 
     }
@@ -144,6 +183,7 @@ uint8_t psimProcess(uint8_t button)
         drawWindow();
         drawUpgradeMenu();
         drawUpgradeSelect();
+        fundString[0] = 0;
       } else if (upgradeOpen) {
         if (menuSelect > 0) {
           menuSelect--;
@@ -263,17 +303,24 @@ void tickGame() {
 
 void updatePsimDisplay() {
   if (psVarInitLaunch == 0 && windowOpen == 0) {
+    char currString[8];
     if (player.funds/1000000000 >1) {
-      snprintf(fundString, 8, "%6.2fB", player.funds/1000000000);
+      snprintf(currString, 8, "%6.2fB", player.funds/1000000000);
     } else if (player.funds/1000000 >1) {
-      snprintf(fundString, 8, "%6.2fM", player.funds/1000000);
+      snprintf(currString, 8, "%6.2fM", player.funds/1000000);
     } else if (player.funds/1000 >1) {
-      snprintf(fundString, 8, "%6.2fK", player.funds/1000);
+      snprintf(currString, 8, "%6.2fK", player.funds/1000);
     } else {
-      snprintf(fundString, 8, "%6.2f", player.funds);
+      snprintf(currString, 8, "%6.2f", player.funds);
     }
-    display.setCursor(50, displayLineY[3]);
-    display.print(fundString);
+    if (strcmp(currString, fundString) ) {
+      strcpy(fundString, currString);
+      display.setCursor(50, displayLineY[3]);
+      //display.clearWindow(45, 27, 94, 29);
+      display.clearWindow(50, 27, 45, 9);
+      display.print(fundString);
+    }
+    
 
     char currEmploy[4];
     snprintf(currEmploy, 4, "%i", player.manning);
@@ -283,17 +330,22 @@ void updatePsimDisplay() {
       display.print(empCountString);
     }
   } else if (upgradeOpen) {
+    char currString[8];
     if (player.funds/1000000000 >1) {
-      snprintf(fundString, 8, "%6.2fB", player.funds/1000000000);
+      snprintf(currString, 8, "%6.2fB", player.funds/1000000000);
     } else if (player.funds/1000000 >1) {
-      snprintf(fundString, 8, "%6.2fM", player.funds/1000000);
+      snprintf(currString, 8, "%6.2fM", player.funds/1000000);
     } else if (player.funds/1000 >1) {
-      snprintf(fundString, 8, "%6.2fK", player.funds/1000);
+      snprintf(currString, 8, "%6.2fK", player.funds/1000);
     } else {
-      snprintf(fundString, 8, "%6.2f", player.funds);
+      snprintf(currString, 8, "%6.2f", player.funds);
     }
-    display.setCursor(45, displayLineY[4]);
-    display.print(fundString);
+    if (strcmp(currString, fundString) ) {
+      strcpy(fundString, currString);
+      display.setCursor(45, displayLineY[4]);
+      display.clearWindow(45, 36, 50, 9);
+      display.print(fundString);
+    }
   }
 }
 
@@ -313,10 +365,14 @@ void drawPsimMenu() {
   display.print("Your Startup");
   display.fontColor(TS_8b_White, inactiveFontBG);
 
-  display.setCursor(0, displayLineY[2]);
+  display.drawLine(1,14,95,14,TS_8b_White);
+  display.drawLine(1,14,1,39,TS_8b_White);
+  display.drawLine(1,39,95,39,TS_8b_White);
+  display.drawLine(95,14,95,39,TS_8b_White);
+  display.setCursor(5, displayLineY[2]);
   display.print("Employees:");
 
-  display.setCursor(0, displayLineY[3]);
+  display.setCursor(5, displayLineY[3]);
   display.print("Funds:");
   
   updatePsimDisplay();
@@ -326,10 +382,10 @@ void drawPsimMenu() {
 void drawWindow() {
   display.clearWindow(0, 0, 96, 64);
   display.fontColor(defaultFontColor, inactiveFontBG);
-  display.drawLine(0,0,0,63,TS_16b_White);
-  display.drawLine(0,0,95,0,TS_16b_White);
-  display.drawLine(95,0,95,63,TS_16b_White);
-  display.drawLine(0,63,95,63,TS_16b_White);
+  display.drawLine(0,0,0,63,TS_8b_White);
+  display.drawLine(0,0,95,0,TS_8b_White);
+  display.drawLine(95,0,95,63,TS_8b_White);
+  display.drawLine(0,63,95,63,TS_8b_White);
 }
 
 void drawStatsMenu () {
@@ -418,19 +474,19 @@ void drawUpgradeSelect() {
   if (menuSelect == 0) {display.fontColor(defaultFontColor, inactiveFontBG);}
   display.setCursor(5, displayLineY[1]);
   display.print(upgradeOptionArr[menuOffset]);
-  display.setCursor(47, displayLineY[1]);
+  display.setCursor(53, displayLineY[1]);
   display.print(cost[0]);
   if (menuSelect == 0) {display.fontColor(inactiveFontColor, inactiveFontBG);}
   if (menuSelect == 1) {display.fontColor(defaultFontColor, inactiveFontBG);}
   display.setCursor(5, displayLineY[2]);
   display.print(upgradeOptionArr[menuOffset+1]);
-  display.setCursor(47, displayLineY[2]);
+  display.setCursor(53, displayLineY[2]);
   display.print(cost[1]);
   if (menuSelect == 1) {display.fontColor(inactiveFontColor, inactiveFontBG);}
   if (menuSelect == 2) {display.fontColor(defaultFontColor, inactiveFontBG);}
   display.setCursor(5, displayLineY[3]);
   display.print(upgradeOptionArr[menuOffset+2]);
-  display.setCursor(47, displayLineY[3]);
+  display.setCursor(53, displayLineY[3]);
   display.print(cost[2]);
   display.fontColor(defaultFontColor, inactiveFontBG);
 }

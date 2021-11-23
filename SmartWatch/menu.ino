@@ -44,15 +44,16 @@ void newMenu(int8_t newIndex) {
 }
 
 //List of items in menu, add more entries here for more menu entries
-static const char PROGMEM mainMenuStrings3[] = "Set date/time";
-static const char PROGMEM mainMenuStrings4[] = "Set auto off";
-static const char PROGMEM mainMenuStrings5[] = "Set brightness";
+static const char PROGMEM mainMenuStrings5[] = "Set date/time";
+static const char PROGMEM mainMenuStrings6[] = "Set auto off";
+static const char PROGMEM mainMenuStrings7[] = "Set brightness";
 static const char PROGMEM mainMenuStrings0[] = "Set Timer";
 //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 static const char PROGMEM mainMenuStrings1[] = "View Temperature";
 //change the valueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 static const char PROGMEM mainMenuStrings2[] = "To Do List";
-static const char PROGMEM mainMenuStrings6[] = "PSIM";
+static const char PROGMEM mainMenuStrings3[] = "Dream Startup";
+static const char PROGMEM mainMenuStrings4[] = "Tarot";
 
 //Update this next
 static const char* const PROGMEM mainMenuStrings[] =
@@ -64,12 +65,13 @@ static const char* const PROGMEM mainMenuStrings[] =
   mainMenuStrings4,
   mainMenuStrings5,
   mainMenuStrings6,
+  mainMenuStrings7,
 
 };
 //Struct for menu, 3rd item is function for handling selection
 const menu_info mainMenuInfo =
 {
-  7, //no. of menu items
+  8, //no. of menu items
   mainMenuStrings, //strings
   mainMenu, //selection handler function
 };
@@ -183,15 +185,15 @@ uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 //Menu selection handler
 void mainMenu(uint8_t selection) {
   if (menu_debug_print)SerialMonitorInterface.println("mainMenuHandler");
-  if (selection == 3) {
+  if (selection == 5) {
     newMenu(dateTimeMenuIndex);
   }
-  if (selection == 4) {
+  if (selection == 6) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &sleepTimeout, buffer, NULL);
   }
-  if (selection == 5) {
+  if (selection == 7) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &brightness, buffer, NULL);
@@ -201,7 +203,7 @@ void mainMenu(uint8_t selection) {
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     user_timer_menu(0, &userTimerSetting, buffer, NULL, &userTimerSetState, &userTimerRunningState);
   }
-  if (selection == 6) { //To add functionality for timer
+  if (selection == 3) { //To add functionality for timer
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     psimProcess(0);
@@ -212,6 +214,9 @@ void mainMenu(uint8_t selection) {
   }
   if (selection == 2) {
     ToDoListStart();
+  }
+  if (selection == 4) {
+    ;//tarot
   }
 }
 
@@ -637,7 +642,7 @@ void ToDoListStart() {
   addItem(bufferArray, "Walk the Dog", &currCount, &ErrorState);
   printDisplay(bufferArray, &selectedIndex, &currCount, &currX, &currY);
 
-  display.setBrightness(10);
+  //display.setBrightness(10);
   display.setFlip(true);
   display.setCursor(currX, currY);
 

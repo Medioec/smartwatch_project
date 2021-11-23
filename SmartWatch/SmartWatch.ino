@@ -112,7 +112,7 @@ uint8_t vibratePinActive = HIGH;
 uint8_t vibratePinInactive = LOW;
 
 
-int brightness = 3;
+int brightness = 5;
 uint8_t lastSetBrightness = 100;
 
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
