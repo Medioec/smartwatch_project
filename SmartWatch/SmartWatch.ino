@@ -174,8 +174,8 @@ typedef struct startup {
 
 startup player {0, 1};
 
-employee intern {10, 800, 1};
-employee dipGrad {50, 2000, 0};
+employee intern {10, 1000, 1};
+employee dipGrad {50, 2000, 1};
 employee grad {200, 4000, 0};
 
 upgrades computer {0.1, 2000, 0};

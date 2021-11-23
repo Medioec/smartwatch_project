@@ -14,7 +14,7 @@ bool statsOpen = false;
 int menuSelect = 0;
 int menuOffset = 0;
 char upgradeOptionArr[5][9] = {"Intern", "DipGrad", "Grad", "Computer", "Lounge"};
-int upgradeCostArr[5] = {intern.cost, dipGrad.cost, grad.cost, computer.cost, lounge.cost};
+int upgradeCostArr[5];
 
 uint8_t psimProcess(uint8_t button)
 {
@@ -154,7 +154,7 @@ uint8_t psimGame(uint8_t button) {
       upgradeOpen = true;
       drawWindow();
       drawUpgradeMenu();
-      drawUpgradeSelect(menuSelect,menuOffset);
+      drawUpgradeSelect();
       fundString[0] = 0;
       updatePsimDisplay();
     } else if (upgradeOpen) {
@@ -163,7 +163,7 @@ uint8_t psimGame(uint8_t button) {
       } else if (menuOffset > 0) {
         menuOffset--;
       }
-      drawUpgradeSelect(menuSelect,menuOffset);
+      drawUpgradeSelect();
     }
 
   }
@@ -186,7 +186,7 @@ uint8_t psimGame(uint8_t button) {
       } else if (menuOffset < 2) {
         menuOffset++;
       }
-      drawUpgradeSelect(menuSelect,menuOffset);
+      drawUpgradeSelect();
     }
   }
   else if (button == TSButtonLowerLeft) {
@@ -208,38 +208,42 @@ uint8_t psimGame(uint8_t button) {
         player.funds -= upgradeCostArr[selection];
         switch (selection) {
           case 0:
-          if (intern.number <= 99) {
+          if (intern.number < 99) {
             intern.number += 1;
           }
           break;
           case 1:
-          if (dipGrad.number <= 99) {
+          if (dipGrad.number < 99) {
             dipGrad.number += 1;
           }
           break;
           case 2:
-          if (grad.number <= 99) {
+          if (grad.number < 99) {
             grad.number += 1;
           }
           break;
           case 3:
-          if (computer.level <= 99) {
+          if (computer.level < 99) {
             computer.level += 1;
-            computer.cost = (player.manning) * 2000;
-            upgradeCostArr[selection] = computer.cost;
+            upgradeCostArr[0] = intern.cost + computer.level * computer.cost;
+            upgradeCostArr[1] = dipGrad.cost + computer.level * computer.cost;
+            upgradeCostArr[2] = grad.cost + computer.level * computer.cost;
             computer.modifier = 0.1 * computer.level;
           }
           break;
           case 4:
-          if (lounge.level <= 99) {
+          if (lounge.level < 99) {
             lounge.level += 1;
             lounge.cost = (1 + lounge.level) * 2000;
             upgradeCostArr[selection] = lounge.cost;
             lounge.modifier = 0.1 * lounge.level;
           }
           break;
+          
         }
-        drawUpgradeSelect(menuSelect,menuOffset);
+        updateVars();
+        upgradeCostArr[3] = player.manning * computer.cost;
+        drawUpgradeSelect();
       }
     }
   }
@@ -249,14 +253,18 @@ uint8_t psimGame(uint8_t button) {
 
 
 void psim_initialise_vars() {
-  player = (startup){.funds = 0, .manning = 1};
-
-  intern = (employee){.income = 10, .cost = 800, .number = 1};
-  dipGrad = (employee){.income = 50, .cost = 2000, .number = 0};
+  intern = (employee){.income = 10, .cost = 1000, .number = 1};
+  dipGrad = (employee){.income = 50, .cost = 2000, .number = 1};
   grad = (employee){.income = 200, .cost = 4000, .number = 0};
 
   computer = (upgrades) {.modifier = 0.1, .cost = 2000, .level = 0};
   lounge = (upgrades) {.modifier = 0.1, .cost = 2000, .level = 0};
+  player = (startup){.funds = 0, .manning = intern.number + dipGrad.number + grad.number};
+  upgradeCostArr[0] = intern.cost;
+  upgradeCostArr[1] = dipGrad.cost;
+  upgradeCostArr[2] = grad.cost;
+  upgradeCostArr[3] = player.manning * computer.cost;
+  upgradeCostArr[4] = lounge.cost;
 }
 
 void updateVars() {
@@ -277,12 +285,12 @@ void tickGame() {
 void updatePsimDisplay() {
   if (psVarInitLaunch == 0 && !windowOpen) {
     char currString[8];
-    if (player.funds/1000000000 >1) {
+    if (player.funds/1000000000 >= 1) {
       snprintf(currString, 8, "%6.2fB", player.funds/1000000000);
-    } else if (player.funds/1000000 >1) {
+    } else if (player.funds/1000000 >= 1) {
       snprintf(currString, 8, "%6.2fM", player.funds/1000000);
-    } else if (player.funds/1000 >1) {
-      snprintf(currString, 8, "%6.2fK", player.funds/1000);
+    } else if (player.funds/1000 >= 1) {
+      snprintf(currString, 8, "%6.2fk", player.funds/1000);
     } else {
       snprintf(currString, 8, "%6.2f", player.funds);
     }
@@ -304,12 +312,12 @@ void updatePsimDisplay() {
     }
   } else if (upgradeOpen) {
     char currString[8];
-    if (player.funds/1000000000 >1) {
+    if (player.funds/1000000000 >= 1) {
       snprintf(currString, 8, "%6.2fB", player.funds/1000000000);
-    } else if (player.funds/1000000 >1) {
+    } else if (player.funds/1000000 >= 1) {
       snprintf(currString, 8, "%6.2fM", player.funds/1000000);
-    } else if (player.funds/1000 >1) {
-      snprintf(currString, 8, "%6.2fK", player.funds/1000);
+    } else if (player.funds/1000 >= 1) {
+      snprintf(currString, 8, "%6.2fk", player.funds/1000);
     } else {
       snprintf(currString, 8, "%6.2f", player.funds);
     }
@@ -426,18 +434,18 @@ void drawUpgradeMenu() {
   display.print('v');
 }
 
-void drawUpgradeSelect(int menuSelect, int menuOffset) {
+void drawUpgradeSelect() {
   display.clearWindow(2, 9, 84, 27);
   display.fontColor(inactiveFontColor, inactiveFontBG);
   char cost[3][8] = {"","",""};
   int costArrayMember = 0;
   for (int i = 0; i < 3; i ++) {
     costArrayMember = upgradeCostArr[menuOffset + i];
-    if (upgradeCostArr[menuOffset + i]/1000000000 >1) {
+    if (upgradeCostArr[menuOffset + i]/1000000000 >= 1) {
       snprintf(cost[i], 8, "%iB", costArrayMember/1000000000);
-    } else if (upgradeCostArr[menuOffset + i]/1000000 >1) {
+    } else if (upgradeCostArr[menuOffset + i]/1000000 >= 1) {
       snprintf(cost[i], 8, "%iM", costArrayMember/1000000);
-    } else if (upgradeCostArr[menuOffset + i]/1000 >1) {
+    } else if (upgradeCostArr[menuOffset + i]/1000 >= 1) {
       snprintf(cost[i], 8, "%ik", costArrayMember/1000);
     } else {
       snprintf(cost[i], 8, "%i", costArrayMember);
